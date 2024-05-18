@@ -9,12 +9,37 @@ import static code.TokenType.*;
 
 class Scanner {
     private final String source;
-    private final List<Token> tokens = new ArrayList<>();
+    private final List<Token> tokens = new ArrayList<>();   
     private int start = 0;
     private int current = 0;
     private int line = 1;
 
     private static final Map<String, TokenType> keywords;
+    private static List<Character> charas = new ArrayList<>();
+
+    //characters
+    static {
+        charas.add(':');
+        charas.add('(');
+        charas.add(')');
+        charas.add(',');
+        charas.add('.');
+        charas.add('-');
+        charas.add('+');
+        charas.add('*');
+        charas.add('/');
+        charas.add('&');
+        charas.add('[');
+        charas.add(']');
+        charas.add('%');
+        charas.add('=');
+        charas.add('<');
+        charas.add('>');
+        charas.add('#');
+        charas.add('"');
+        charas.add('\'');
+        charas.add('$');
+    }
 
     //reserved words
     static {
@@ -69,9 +94,8 @@ class Scanner {
             case '*': addToken(STAR); break;
             case '%': addToken(MODULO); break;
             case '[':
-                if (match(']')) {
-                    addToken(ESCAPE);
-                }
+                escapechar();
+                break;
             case '=':
                 addToken(match('=') ? EQUAL_EQUAL: EQUAL);
                 break;
@@ -98,6 +122,7 @@ class Scanner {
                 break;
 
             case '$': //next line
+                addToken(NEXT_LINE);
                 line++;
                 break;
 
@@ -118,6 +143,37 @@ class Scanner {
                 }
                 break;
         }
+    }
+
+    private void escapechar(){
+        while (peek() != ']' && !isAtEnd()) {
+            if (peek() == '\n') return;
+            advance();
+        }
+
+        if(current - start != 2){
+            advance();
+            
+            if(peek() !=']') {
+                Code.error(line, "Invalid escape character");
+                return;
+            }
+            
+        }
+
+        // The closing ].
+        advance();
+
+        // Trim the surrounding quotes.
+        char value = source.charAt(start + 1);
+
+        //if the character inside the [] is in the List of characters 
+        if(charas.contains(value)){
+            addToken(ESCAPE, value);
+            return;
+        }
+
+        Code.error(line, "Invalid Escape Character.");
     }
 
     //-----------------------------DATA TYPE [START] ---------------
@@ -247,6 +303,14 @@ class Scanner {
         // Regular string handling
         while (peek() != '"' && !isAtEnd()) {
             if (peek() == '\n') line++;
+            if (peek() == '$') {
+                
+                String val = source.substring(start + 1, current);
+                addToken(STRING, val);
+                addToken(NEXT_LINE);
+                start = current;
+                line++;
+            }
             advance();
         }
 

@@ -414,11 +414,7 @@ public class Parser {
             return new Expr.Literal(previous().literal);
         }
 
-//        if (match(BEGIN)){
-//
-//        }
-
-        if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING)) {
+        if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING, ESCAPE)) {
             return new Expr.Literal(previous().literal);
         }
 

@@ -79,9 +79,9 @@ public class Code {
         List<code.Token> tokens = scanner.scanTokens();
 
         // For now, just print the tokens.
-//        for (lox.Token token : tokens) {
-//            System.out.println(token);
-//        }
+    //    for (code.Token token : tokens) {
+    //        System.out.println(token);
+    //    }
 
         Parser parser = new Parser((List<code.Token>) tokens);
         List<code.Stmt> statements = parser.parse();
