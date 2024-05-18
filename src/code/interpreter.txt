@@ -2,5 +2,5 @@ BEGIN CODE
     CHAR z=6
     INT  y=5
 	INT x = z+y
-	DISPLAY: x
+	DISPLAY: [&] & "hehe" & [&]
 END CODE
