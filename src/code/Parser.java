@@ -396,7 +396,7 @@ public class Parser {
     }
 
     private Expr unary() {
-        if (match(NOT, MINUS, PLUS)) {
+        if (match(NOT, MINUS, PLUS, NEXT_LINE)) {
             Token operator = previous();
             Expr right = unary();
             return new Expr.Unary(operator, right);
@@ -415,7 +415,27 @@ public class Parser {
         }
 
         if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING, ESCAPE)) {
-            return new Expr.Literal(previous().literal);
+            Token previousObjToken = previous();
+
+            if (check(NEXT_LINE) && !isAtEnd()) {
+                //the newline token $
+                advance();
+
+                //if the newline $ is in the middle of a string, 
+                //it will be treated as a binary operation for 2 strings
+                if (!isAtEnd()) {
+                    Token nextToken = peek();
+                    return new Expr.Binary(new Expr.Literal(previousObjToken.getLiteral()),
+                            new Token(NEXT_LINE, null, "\n", -1), primary());
+                } else {
+                    //if the newline $ is at the end of a string
+                    System.out.print(previousObjToken.getLiteral());
+                    return new Expr.Literal(new Token(NEXT_LINE, null, null, -1));
+                }
+            } else {
+                return new Expr.Literal(previousObjToken.getLiteral());
+            }
+            // return new Expr.Literal(previous().literal);
         }
 
         

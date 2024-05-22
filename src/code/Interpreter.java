@@ -40,20 +40,26 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Object right = evaluate(expr.right);
 
         switch (expr.operator.type) {
-//            case BANG:  ----> excluded
             case NOT:
                 return !isTruthy(right);
-            case MINUS: //BUGGED -->  doesnt work
+            case MINUS: 
                 checkNumberOperand(expr.operator, right);
-                if(right instanceof IntegerValue) {
-                    int rightVal = ((Number) right).intValue();
-                    System.out.println("num is" + " " + rightVal);
-                    return rightVal;
+                if(right instanceof Integer) {
+                    return -(int)right;
                 }
-                else if (right instanceof FloatValue) {
-                    float rightVal = ((Number) right).floatValue();
-                    return rightVal;
+                else if (right instanceof Float) {
+                    return -(float)right;
                 }
+            case PLUS: 
+                checkNumberOperand(expr.operator, right);
+                if(right instanceof Integer) {
+                    return +(int)right;
+                }
+                else if (right instanceof Float) {
+                    return +(float)right;
+                }
+            case NEXT_LINE:
+                return "\n" + stringify(right);
         }
 
         // Unreachable.
@@ -70,14 +76,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         throw new RuntimeError(operator, "Operand must be a number.");
     }
 
-    private void checkNumberOperands(Token operator,
-                                     Object left, Object right) {
-        if (left instanceof Double && right instanceof Double) return;
-        if (left instanceof Float && right instanceof Float) return;
-        if (left instanceof Integer && right instanceof Integer) return;
+    // private void checkNumberOperands(Token operator,
+    //                                  Object left, Object right) {
+    //     if (left instanceof Double && right instanceof Double) return;
+    //     if (left instanceof Float && right instanceof Float) return;
+    //     if (left instanceof Integer && right instanceof Integer) return;
 
-        throw new RuntimeError(operator, "Operands must be numbers.");
-    }
+    //     throw new RuntimeError(operator, "Operands must be numbers.");
+    // }
 
     private boolean isTruthy(Object object) {
         if (object == null) return false;
@@ -94,6 +100,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private String stringify(Object object) {
         if (object == null) return "nil";
+
+        if (object instanceof Boolean) {
+            return object.toString().toUpperCase();
+        }
 
         if (object instanceof Double) {
             String text = object.toString();
@@ -227,6 +237,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 //            case STAR:
 //                checkNumberOperands(expr.operator, left, right);
 //                return (double)left * (double)right;
+            case NEXT_LINE:
+                return (stringify(left) + "\n" + stringify(right));
             case NOT_EQUAL:
                 return !isEqual(left, right);
             case EQUAL_EQUAL:
