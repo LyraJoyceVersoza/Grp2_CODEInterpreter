@@ -13,7 +13,31 @@ class Token {
         this.line = line;
     }
 
+    public TokenType getType() {
+        return type;
+    }
+
+
+    public String getLexeme() {
+        return lexeme;
+    }
+
+
+    public Object getLiteral() {
+        return literal;
+    }
+
+
+    public int getLine() {
+        return line;
+    }
+
     public String toString() {
+        if(type == TokenType.NEXT_LINE){
+            return "\n";
+        }
         return type + " " + lexeme + " " + literal;
     }
+
+
 }
