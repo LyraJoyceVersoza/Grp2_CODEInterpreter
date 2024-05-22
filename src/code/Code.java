@@ -63,26 +63,29 @@ public class Code {
         List<code.Stmt> statements = parser.parse();
 
         //flag to check if DISPLAY token exists
-        int display_exists = 0;
+        boolean display_exists = false;
         // Stop if there was a syntax error.
 
         if (hadError) {
             return;
-        } else {
-            //checks if there is DISPLAY token
-            for (code.Token token : tokens) {
+        } 
+
+        interpreter.interpret(statements);
+        
+        //if there are no errors
+        if(!hadRuntimeError && !hadError){
+             //checks if there is DISPLAY token
+             for (code.Token token : tokens) {
                 if (token.type.equals(DISPLAY)){
-                    display_exists=1;
+                    display_exists=true;
                 }
             }
 
             //prints no error if there is NO DISPLAY token and if no errors
-            if(display_exists==0){
+            if(!display_exists){
                 System.out.print("No error");
             }
-        } 
-
-        interpreter.interpret(statements);
+        }
     }
 
     static void error(int line, String message) {

@@ -374,7 +374,7 @@ public class Parser {
     private Expr term() {
         Expr expr = factor();
 
-        while (match(MINUS, PLUS, CONCAT)) {
+        while (match(MINUS, PLUS, CONCAT,NEXT_LINE)) {
             Token operator = previous();
             Expr right = factor();
             expr = new Expr.Binary(expr, operator, right);
@@ -386,7 +386,7 @@ public class Parser {
     private Expr factor() {
         Expr expr = unary();
 
-        while (match(SLASH, STAR)) {
+        while (match(SLASH, STAR, MODULO, NEXT_LINE)) {
             Token operator = previous();
             Expr right = unary();
             expr = new Expr.Binary(expr, operator, right);
@@ -417,6 +417,8 @@ public class Parser {
         if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING, ESCAPE)) {
             return new Expr.Literal(previous().literal);
         }
+
+        
 
 //        if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)) {
 //            Token nameToken = previous(); // Capture the datatype token
