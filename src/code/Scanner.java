@@ -110,7 +110,7 @@ class Scanner {
                 break;
             case '#':
                 // A comment goes until the end of the line.
-                while (peek() != '$' && !isAtEnd()) advance();
+                while (peek() != '\n' && !isAtEnd()) advance();
                 break;
 
             case ' ':
@@ -122,7 +122,7 @@ class Scanner {
                 break;
 
             case '$': //next line
-                addToken(NEXT_LINE);
+                addToken(NEXT_LINE, '\n');
                 line++;
                 break;
 

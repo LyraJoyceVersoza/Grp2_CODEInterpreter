@@ -1,5 +1,7 @@
 package code;
 
+import static code.TokenType.DISPLAY;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,32 +40,6 @@ public class Code {
         }
     }
 
-//    private static void runPrompt() throws IOException {
-//        InputStreamReader input = new InputStreamReader(System.in);
-//        BufferedReader reader = new BufferedReader(input);
-//
-//        StringBuilder programBuilder = new StringBuilder();
-//        boolean inCodeBlock = false;
-//
-//        for (;;) {
-//            System.out.print("> ");
-//            String line = reader.readLine();
-//            if (line == null) break;
-//
-//            if (line.trim().equals("END CODE")) {
-//                inCodeBlock = false;
-//                run(programBuilder.toString());
-//                programBuilder.setLength(0); // Reset program builder
-//                hadError = false;
-//            } else {
-//                programBuilder.append(line).append("\n");
-//                if (line.trim().equals("BEGIN CODE")) {
-//                    inCodeBlock = true;
-//                }
-//            }
-//        }
-//    }
-
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
@@ -86,8 +62,25 @@ public class Code {
         Parser parser = new Parser((List<code.Token>) tokens);
         List<code.Stmt> statements = parser.parse();
 
+        //flag to check if DISPLAY token exists
+        int display_exists = 0;
         // Stop if there was a syntax error.
-        if (hadError) return;
+
+        if (hadError) {
+            return;
+        } else {
+            //checks if there is DISPLAY token
+            for (code.Token token : tokens) {
+                if (token.type.equals(DISPLAY)){
+                    display_exists=1;
+                }
+            }
+
+            //prints no error if there is NO DISPLAY token and if no errors
+            if(display_exists==0){
+                System.out.print("No error");
+            }
+        } 
 
         interpreter.interpret(statements);
     }
