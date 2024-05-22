@@ -249,7 +249,13 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                         case LESS_EQUAL -> l <= r;
                         case MINUS -> l - r;
                         case PLUS -> l + r;
-                        case SLASH -> l / r;
+                        case MODULO -> l % r;
+                        case SLASH -> {
+                            if (r == 0) {
+                                throw new RuntimeError(expr.operator, "Division by zero.");
+                            }
+                            yield l / r;
+                        }
                         case STAR -> l * r;
                         default -> throw new RuntimeError(expr.operator, "Invalid binary operator for numbers.");
                     };
@@ -263,7 +269,13 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                         case LESS_EQUAL -> l <= r;
                         case MINUS -> l - r;
                         case PLUS -> l + r;
-                        case SLASH -> l / r;
+                        case MODULO -> l % r;
+                        case SLASH -> {
+                            if (r == 0) {
+                                throw new RuntimeError(expr.operator, "Division by zero.");
+                            }
+                            yield l / r;
+                        }
                         case STAR -> l * r;
                         default -> throw new RuntimeError(expr.operator, "Invalid binary operator for numbers.");
                     };
@@ -277,6 +289,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                         case LESS_EQUAL -> l <= r;
                         case MINUS -> l - r;
                         case PLUS -> l + r;
+                        case MODULO -> l % r;
                         case SLASH -> {
                             if (r == 0) {
                                 throw new RuntimeError(expr.operator, "Division by zero.");
