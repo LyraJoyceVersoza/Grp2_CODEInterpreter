@@ -11,6 +11,9 @@ public class Parser {
     private final List<Token> tokens;
     private Environment environment = new Environment();
     private int current = 0;
+    private boolean BEGINflag = false;
+    private boolean ENDflag = false;
+    
 
     Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -220,18 +223,39 @@ public class Parser {
 
     private code.Stmt statement() {
         if (match(IF)) return ifStatement();
+
         if (match(DISPLAY)) {
             if(match(COLON)){
                 return printStatement();
             }
         }
+
         if (match(WHILE)) return whileStatement();
-//        if (match(BEGIN)) return new Stmt.Block(block()); -->original
+
         if (match(BEGIN)) {
             if(match(CODE)){
+
+                if(BEGINflag) {
+                    Code.error(Scanner.getLine(), "Cannot allow multiple BEGIN CODE and END CODE declarations");
+                    return null;
+                }
+
+                BEGINflag = true;
                 return new code.Stmt.Block(block());
             }
         }
+
+        if (match(END)) {
+            if(match(CODE)){
+
+                if(ENDflag) {
+                    Code.error(Scanner.getLine(), "Cannot allow multiple BEGIN CODE and END CODE declarations");
+                    return null;
+                }
+                return null;
+            }
+        }
+
         return expressionStatement();
     }
 
