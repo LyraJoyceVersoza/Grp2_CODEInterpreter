@@ -12,10 +12,11 @@ class Scanner {
     private final List<Token> tokens = new ArrayList<>();   
     private int start = 0;
     private int current = 0;
-    private int line = 1;
+    // private int line = 1;
+    private static int line;
 
     private static final Map<String, TokenType> keywords;
-    private static List<Character> charas = new ArrayList<>();
+    private static final List<Character> charas = new ArrayList<>();
 
     //characters
     static {
@@ -115,6 +116,8 @@ class Scanner {
 
             case ' ':
             case '\n':
+                line++;
+                break;
             case '\r':
             case '\t':
 //            case'[]': //unsure how to implement this escape thing
@@ -383,4 +386,17 @@ class Scanner {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
     }
+
+    public static Map<String, TokenType> getKeywords() {
+        return keywords;
+    }
+
+    public static List<Character> getCharacters() {
+        return charas;
+    }
+
+    public static int getLine() {
+        return line;
+    }
+
 }
