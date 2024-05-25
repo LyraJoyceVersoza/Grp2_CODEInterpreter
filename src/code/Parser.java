@@ -10,6 +10,7 @@ public class Parser {
 
     private final List<Token> tokens;
     private Environment environment = new Environment();
+    private boolean varDeclarationStart = false;
     private int current = 0;
     private boolean BEGINflag = false;
     private boolean ENDflag = false;
@@ -22,7 +23,7 @@ public class Parser {
     List<code.Stmt> parse() {
         List<code.Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(declaration());
+            statements.addAll(declaration());
         }
 
         return statements;
@@ -45,217 +46,188 @@ public class Parser {
         return expr;
     }
 
-    private Stmt declaration() {
-        try {
-//            if (match(VAR)) return varDeclaration();
-//            -->original
-            // if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)) return varDeclaration();
-           if (match(INT_KEYWORD)) return varDeclaration("INT");
-           if (match(FLOAT_KEYWORD)) return varDeclaration("FLOAT");
-           if (match(CHAR_KEYWORD)) return varDeclaration("CHAR");
-           if (match(BOOL_KEYWORD)) return varDeclaration("BOOL");
-           if (match(STRING_KEYWORD)) return varDeclaration("STRING");
+    private List<Stmt> declaration() {
+        List<Stmt> stmts = new ArrayList<>();    
 
-            return statement();
+        try {
+            if (match(INT_KEYWORD)) {
+                stmts.addAll(varDeclaration("INT"));
+                return stmts;
+            }
+            if (match(CHAR_KEYWORD)) {
+                stmts.addAll(varDeclaration("CHAR"));
+                return stmts;
+            }
+            if (match(BOOL_KEYWORD)) {
+                stmts.addAll(varDeclaration("BOOL"));
+                return stmts;
+            }
+            if (match(FLOAT_KEYWORD)) {
+                stmts.addAll(varDeclaration("FLOAT"));
+                return stmts;
+            }
+            if (match(STRING_KEYWORD)) {
+                stmts.addAll(varDeclaration("STRING"));
+                return stmts;
+            }
+
+            stmts.add(statement());
+
+            // if (match(INT_KEYWORD)) return varDeclaration("INT");
+            // if (match(FLOAT_KEYWORD)) return varDeclaration("FLOAT");
+            // if (match(CHAR_KEYWORD)) return varDeclaration("CHAR");
+            // if (match(BOOL_KEYWORD)) return varDeclaration("BOOL");
+            // if (match(STRING_KEYWORD)) return varDeclaration("STRING");            
         } catch (ParseError error) {
             synchronize();
-            return null;
+            // return null;
         }
+        
+
+        return stmts;
     }
 
     //original
-//     private code.Stmt varDeclaration() { //ORIGINAL
-//         Token datatype = previous(); // Capture the datatype token
+//     private Stmt declaration() {
+//         try {
+// //            if (match(VAR)) return varDeclaration();
+// //            -->original
+//             // if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)) return varDeclaration();
+//            if (match(INT_KEYWORD)) return varDeclaration("INT");
+//            if (match(FLOAT_KEYWORD)) return varDeclaration("FLOAT");
+//            if (match(CHAR_KEYWORD)) return varDeclaration("CHAR");
+//            if (match(BOOL_KEYWORD)) return varDeclaration("BOOL");
+//            if (match(STRING_KEYWORD)) return varDeclaration("STRING");
 
-//         Token name = consume(IDENTIFIER, "Expect variable name.");
-
-//         Expr initializer = null;
-//         if (match(EQUAL)) {
-//             initializer = expression();
-
-//             // Check if the assigned value matches the datatype
-// //            if (!checkDatatype(initializer, datatype.type)){
-// //                throw error(previous(), "Datatype mismatch in variable declaration.");
-// //            }
+//             return statement();
+//         } catch (ParseError error) {
+//             synchronize();
+//             return null;
 //         }
+//     }
 
-//        return new Stmt.Var(name, initializer); -->orig
-//        if(validType){
-//            TokenType dataType = getExpressionDatatype(initializer);
-//            environment.defineDataType(name.lexeme, datatype.lexeme); //executes as intended
-//        }
+    //original
+    // private code.Stmt varDeclaration(String datatype) { //ORIGINAL
+    //     Token name = consume(IDENTIFIER, "Expect variable name.");
 
-    //     return new code.Stmt.Var(name, initializer);
+    //     Expr initializer = null;
+    //     if (match(EQUAL)) {
+    //         initializer = expression();
+    //     }
+
+    //     switch(datatype){
+    //         case "INT":
+    //             return new Stmt.Int(name, initializer);
+    //         case "CHAR":
+    //             return new Stmt.Char(name, initializer);
+    //         case "BOOL":
+    //             return new Stmt.Bool(name, initializer);
+    //         case "FLOAT":
+    //             return new Stmt.Float(name, initializer);
+    //         case "STRING":
+    //             return new Stmt.String(name, initializer);
+    //         default:
+    //             break;
+                
+    //     }
+
+    //    return null;
+     
     // }
 
-    private Stmt varDeclaration(String datatype) { 
-        Token name = consume(IDENTIFIER, "Expect variable name.");
+    private List<Stmt> varDeclaration(String datatype) { 
+        List<Token> names = new ArrayList<>();
+        List<Expr> initializers = new ArrayList<>();
 
-        Expr initializer = null;
-        if (match(EQUAL)) {
-            initializer = expression();
-        }
+        TokenType tokenType;
 
+        // if (executableStarted) {
+        //     Code.error(current, "Cannot declare variable after executable code");
+        // }
+        
+        //saves the datatype declared
         switch(datatype){
             case "INT":
-                return new Stmt.Int(name, initializer);
-            case "CHAR":
-                return new Stmt.Char(name, initializer);
-            case "BOOL":
-                return new Stmt.Bool(name, initializer);
-            case "FLOAT":
-                return new Stmt.Float(name, initializer);
-            case "STRING":
-                return new Stmt.String(name, initializer);
-            default:
+                tokenType = TokenType.INT_KEYWORD;
+                varDeclarationStart = true;
                 break;
-                
+            case "CHAR":
+                tokenType = TokenType.CHAR_KEYWORD;
+                varDeclarationStart = true;
+                break;
+            case "BOOL":
+                tokenType = TokenType.BOOL_KEYWORD;
+                varDeclarationStart = true;
+                break;
+            case "FLOAT":
+                tokenType = TokenType.FLOAT_KEYWORD;
+                varDeclarationStart = true;
+                break;
+            case "STRING":
+                tokenType = TokenType.STRING_KEYWORD;
+                varDeclarationStart = true;
+                break;
+            default:
+                System.out.println("Datatype does not exist.");
+                return null;                
         }
-        
-        return null;
-    }
 
-    //-----------------------additional code[start]-----------------
-    private boolean checkDatatype(Expr initializer, TokenType expectedType) {
-        // Check if initializer is null (no value assigned)
-        if (initializer == null) {
-            // Return false if no value is assigned
-            return false;
-        }
+        //adds every variable name and initializers to their respective arraylists
+        do {
+            Token name = consume(IDENTIFIER, "Expect variable name.");
 
-        // Determine the datatype of the initializer expression
-        TokenType actualType = getExpressionDatatype(initializer);
-
-        // Compare the actual datatype with the expected datatype
-        return actualType == expectedType;
-    }
-
-    private TokenType getExpressionDatatype(Expr expr) {
-        if (expr instanceof Expr.Literal) {
-            // If it's a literal expression, return the datatype of the literal
-            Object value = ((Expr.Literal) expr).value;
-            if (value instanceof Integer) {
-                return TokenType.INT_KEYWORD;
-            } else if (value instanceof Character) {
-                return TokenType.CHAR_KEYWORD;
-            } else if (value instanceof Boolean) {
-                return TokenType.BOOL_KEYWORD;
-            } else if (value instanceof Float) {
-                return TokenType.FLOAT_KEYWORD;
+            Expr initializer = null;
+            if (match(EQUAL)) {
+                initializer = expression();
             }
-        } else if (expr instanceof Expr.Grouping) {
-            // If it's a grouping expression, recursively check the expression inside
-            return getExpressionDatatype(((Expr.Grouping) expr).expression);
+
+            names.add(name);
+            initializers.add(initializer);
+
+        } while (match(COMMA));                 
+
+        List<Stmt> stmts = new ArrayList<>();
+        for (int i = 0; i < names.size(); i++) {
+            Token name = names.get(i);
+            Expr initializer = initializers.get(i);
+
+            switch (tokenType) {
+                case INT_KEYWORD:
+                    varDeclarationStart = true;
+                    stmts.add(new Stmt.Int(name, initializer));
+                    break;
+                case CHAR_KEYWORD:
+                    varDeclarationStart = true;
+                    stmts.add(new Stmt.Char(name, initializer));
+                    break;
+                case BOOL_KEYWORD:
+                    varDeclarationStart = true;
+                    stmts.add(new Stmt.Bool(name, initializer));
+                    break;
+                case FLOAT_KEYWORD:
+                    varDeclarationStart = true;
+                    stmts.add(new Stmt.Float(name, initializer));
+                    break;
+                case STRING_KEYWORD:
+                    varDeclarationStart = true;
+                    stmts.add(new Stmt.String(name, initializer));
+                    break;
+                default:
+                    stmts.add(new Stmt.MultiVar(null, names, initializers));
+                    break;
+            }
         }
-//        else if (expr instanceof Expr.Variable) {
-//            // If it's a variable expression, look up the datatype of the variable in the environment
-//            Token variableName = ((Expr.Variable) expr).name;
-//            // Assume you have a method to get the datatype of a variable from the environment
-//            TokenType variableType = getVariableDatatype(variableName);
-//            return variableType;
-//        }
-        // Return null if the datatype cannot be determined
-        return null;
-    }
-
-//    private TokenType getVariableDatatype(Token variableName) {
-//        /// Implement logic to look up the datatype of the variable from the environment
-//        // Return the datatype (e.g., INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)
-//        // Return null if the variable is not found or if its datatype is unknown
-//        return null;
-//    }
-
-//    private TokenType getVariableDatatype(Token variableName) {
-//        Object value = environment.get(variableName); // Assuming you have a method to get variable value from the environment
-//
-//        if (value == null) {
-//            // Variable not found in the environment
-//            // You might want to throw an error or handle this case differently based on your requirements
-//            return TokenType.UNKNOWN; // or return null, TokenType.UNKNOWN, or throw an error
-//        }
-//
-//        // Determine the datatype of the variable based on its value
-//        if (value instanceof Integer) {
-//            return TokenType.INT_KEYWORD;
-//        } else if (value instanceof String) {
-//            return TokenType.CHAR_KEYWORD;
-//        } else if (value instanceof Boolean) {
-//            return TokenType.BOOL_KEYWORD;
-//        } else if (value instanceof Double) {
-//            return TokenType.FLOAT_KEYWORD;
-//        }
-//
-//        // If the datatype cannot be determined from the value, you might return TokenType.UNKNOWN or handle it differently
-//        return TokenType.UNKNOWN; // or return null, throw an error, etc.
-//    }
-    //-----------------------additional code[end]-------------------
-
-//    private Stmt intDeclaration() {
-//        Token name = consume(IDENTIFIER, "Expect variable name.");
-//
-//        Expr initializer = null;
-//        if (match(EQUAL)) {
-//            initializer = expression();
-//        }
-//
-//        return new Stmt.VarInt(name, initializer,INT_KEYWORD);
-//    }
-//
-//    private Stmt charDeclaration() {
-//        Token name = consume(IDENTIFIER, "Expect variable name.");
-//
-//        Expr initializer = null;
-//        if (match(EQUAL)) {
-//            initializer = expression();
-//            // // Check if the initializer is a character literal
-//            // if (!(initializer instanceof Expr.Literal) || !(initializer.value instanceof Character)) {
-//            //     throw error(peek(), "Initializer for char variable must be a character literal.");
-//            // }
-//        }
-//
-//        return new Stmt.VarChar(name, initializer,CHAR_KEYWORD);
-//    }
-//
-//    private Stmt floatDeclaration() {
-//        Token name = consume(IDENTIFIER, "Expect variable name.");
-//
-//        Expr initializer = null;
-//        if (match(EQUAL)) {
-//            initializer = expression();
-//
-//            // // Check if the initializer is a number literal (integer or float)
-//            // if (!(initializer instanceof Expr.Literal) ||
-//            //     !(initializer.value instanceof Number)) {
-//            //     throw error(peek(), "Initializer for float variable must be a number literal.");
-//            // }
-//        }
-//
-//        return new Stmt.VarFloat(name, initializer,FLOAT_KEYWORD);
-//    }
-//
-//    private Stmt boolDeclaration() {
-//        Token name = consume(IDENTIFIER, "Expect variable name.");
-//
-//        Expr initializer = null;
-//        if (match(EQUAL)) {
-//            initializer = expression();
-//
-//            // // Check if the initializer is a boolean literal
-//            // if (!(initializer instanceof Expr.Literal) ||
-//            //     !(initializer.value instanceof Boolean)) {
-//            //     throw error(peek(), "Initializer for bool variable must be a boolean literal.");
-//            // }
-//        }
-//
-//        return new Stmt.VarBool(name, initializer,BOOL_KEYWORD);
-//    }
+        // System.out.println(stmts);
+        return stmts;
+        
+    }    
 
     private code.Stmt statement() {
         if (match(IF)) return ifStatement();
 
         if (match(DISPLAY)) {
             if(match(COLON)){
-                return printStatement();
+                return displayStatement();
             }
         }
 
@@ -320,9 +292,9 @@ public class Parser {
         return tokens.get(current + 1).type == type;
     }
 
-    private code.Stmt printStatement() {
+    private code.Stmt displayStatement() {
         Expr value = expression();
-        return new code.Stmt.Print(value);
+        return new Stmt.Display(value);
     }
 
     private code.Stmt whileStatement() {
@@ -357,7 +329,7 @@ public class Parser {
 //        -->GUIDE
 
         while (!(check(END)) && !isAtEnd()) {
-            statements.add(declaration());
+            statements.addAll(declaration());
         }
 
         consume(END, "Expect 'END CODE' after block.");
@@ -467,7 +439,7 @@ public class Parser {
             return new Expr.Literal(previous().literal);
         }
 
-        if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING, ESCAPE)) {
+        if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING_LITERAL, ESCAPE)) {
             Token previousObjToken = previous();
 
             if (check(NEXT_LINE) && !isAtEnd()) {

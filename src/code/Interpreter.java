@@ -166,9 +166,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Void visitPrintStmt(code.Stmt.Print stmt) {
+    public Void visitDisplayStmt(Stmt.Display stmt) {
         Object value = evaluate(stmt.expression);
         System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitScanStmt(Stmt.Scan stmt) {
+        return null;
+    }
+
+    @Override
+    public Void visitMultiVarStmt(Stmt.MultiVar stmt) {
         return null;
     }
 

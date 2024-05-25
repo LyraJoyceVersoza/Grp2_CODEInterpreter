@@ -7,12 +7,14 @@ abstract class Stmt {
     R visitBlockStmt(Block stmt);
     R visitExpressionStmt(Expression stmt);
     R visitIfStmt(If stmt);
-    R visitPrintStmt(Print stmt);
+    R visitDisplayStmt(Display stmt);
+    R visitScanStmt(Scan stmt);
     R visitIntStmt(Int stmt);
     R visitCharStmt(Char stmt);
     R visitFloatStmt(Float stmt);
     R visitBoolStmt(Bool stmt);
     R visitStringStmt(String stmt);
+    R visitMultiVarStmt(MultiVar stmt);
     R visitWhileStmt(While stmt);
   }
   static class Block extends Stmt {
@@ -55,17 +57,31 @@ abstract class Stmt {
     final Stmt thenBranch;
     final Stmt elseBranch;
   }
-  static class Print extends Stmt {
-    Print(Expr expression) {
+  static class Display extends Stmt {
+    Display(Expr expression) {
       this.expression = expression;
     }
 
     @Override
     <R> R accept(Visitor<R> visitor) {
-      return visitor.visitPrintStmt(this);
+      return visitor.visitDisplayStmt(this);
     }
 
     final Expr expression;
+  }
+  static class Scan extends Stmt {
+    Scan(Token name, Expr initializer) {
+      this.name = name;
+      this.initializer = initializer;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitScanStmt(this);
+    }
+
+    final Token name;
+    final Expr initializer;
   }
   static class Int extends Stmt {
     Int(Token name, Expr initializer) {
@@ -136,6 +152,22 @@ abstract class Stmt {
 
     final Token name;
     final Expr initializer;
+  }
+  static class MultiVar extends Stmt {
+    MultiVar(String type, List<Token> names, List<Expr> initializers) {
+      this.type = type;
+      this.names = names;
+      this.initializers = initializers;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitMultiVarStmt(this);
+    }
+
+    final String type;
+    final List<Token> names;
+    final List<Expr> initializers;
   }
   static class While extends Stmt {
     While(Expr condition, Stmt body) {
