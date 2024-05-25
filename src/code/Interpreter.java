@@ -172,14 +172,91 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return null;
     }
 
+    // @Override
+    // public Void visitVarStmt(code.Stmt.Var stmt) {
+    //     Object value = null;
+    //     if (stmt.initializer != null) {
+    //         value = evaluate(stmt.initializer);
+    //     }
+
+    //     environment.define(stmt.name.lexeme, value);
+    //     return null;
+    // }
+
     @Override
-    public Void visitVarStmt(code.Stmt.Var stmt) {
+    public Void visitIntStmt(Stmt.Int stmt) {
         Object value = null;
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
+            if(!(value instanceof Integer)){
+                throw new RuntimeError(stmt.name, "Instance must be an integer.");
+            }
+        }
+        String dataType = "INT";
+
+        environment.define(stmt.name.lexeme, value,dataType);
+        return null;
+    }
+
+    @Override
+    public Void visitCharStmt(Stmt.Char stmt) {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+            if(!(value instanceof Character)){
+                throw new RuntimeError(stmt.name, "Instance must be a character.");
+            }
         }
 
-        environment.define(stmt.name.lexeme, value);
+        String dataType = "CHAR";
+
+        environment.define(stmt.name.lexeme, value,dataType);
+        return null;
+    }
+
+    @Override
+    public Void visitFloatStmt(Stmt.Float stmt) {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+            if(!(value instanceof Float)){
+                throw new RuntimeError(stmt.name, "Instance must be a float.");
+            }
+        }
+        String dataType = "FLOAT";
+
+        environment.define(stmt.name.lexeme, value, dataType);
+        return null;
+    }
+
+    @Override
+    public Void visitBoolStmt(Stmt.Bool stmt) {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+            if(!(value instanceof Boolean)){
+                throw new RuntimeError(stmt.name, "Instance must be a boolean.");
+            }
+        }
+
+        String dataType = "BOOL";
+
+        environment.define(stmt.name.lexeme, value,dataType);
+        return null;
+    }
+
+    @Override
+    public Void visitStringStmt(Stmt.String stmt) {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+            if(!(value instanceof String)){
+                throw new RuntimeError(stmt.name, "Instance must be a string.");
+            }
+        }
+        String dataType = "STRING";
+
+        environment.define(stmt.name.lexeme, value,dataType);
         return null;
     }
 

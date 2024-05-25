@@ -8,7 +8,11 @@ abstract class Stmt {
     R visitExpressionStmt(Expression stmt);
     R visitIfStmt(If stmt);
     R visitPrintStmt(Print stmt);
-    R visitVarStmt(Var stmt);
+    R visitIntStmt(Int stmt);
+    R visitCharStmt(Char stmt);
+    R visitFloatStmt(Float stmt);
+    R visitBoolStmt(Bool stmt);
+    R visitStringStmt(String stmt);
     R visitWhileStmt(While stmt);
   }
   static class Block extends Stmt {
@@ -63,15 +67,71 @@ abstract class Stmt {
 
     final Expr expression;
   }
-  static class Var extends Stmt {
-    Var(Token name, Expr initializer) {
+  static class Int extends Stmt {
+    Int(Token name, Expr initializer) {
       this.name = name;
       this.initializer = initializer;
     }
 
     @Override
     <R> R accept(Visitor<R> visitor) {
-      return visitor.visitVarStmt(this);
+      return visitor.visitIntStmt(this);
+    }
+
+    final Token name;
+    final Expr initializer;
+  }
+  static class Char extends Stmt {
+    Char(Token name, Expr initializer) {
+      this.name = name;
+      this.initializer = initializer;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitCharStmt(this);
+    }
+
+    final Token name;
+    final Expr initializer;
+  }
+  static class Float extends Stmt {
+    Float(Token name, Expr initializer) {
+      this.name = name;
+      this.initializer = initializer;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitFloatStmt(this);
+    }
+
+    final Token name;
+    final Expr initializer;
+  }
+  static class Bool extends Stmt {
+    Bool(Token name, Expr initializer) {
+      this.name = name;
+      this.initializer = initializer;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitBoolStmt(this);
+    }
+
+    final Token name;
+    final Expr initializer;
+  }
+  static class String extends Stmt {
+    String(Token name, Expr initializer) {
+      this.name = name;
+      this.initializer = initializer;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitStringStmt(this);
     }
 
     final Token name;

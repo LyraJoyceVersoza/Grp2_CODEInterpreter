@@ -45,15 +45,16 @@ public class Parser {
         return expr;
     }
 
-    private code.Stmt declaration() {
+    private Stmt declaration() {
         try {
 //            if (match(VAR)) return varDeclaration();
 //            -->original
-            if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)) return varDeclaration();
-//            if (match(INT_KEYWORD)) return intDeclaration();
-//            if (match(FLOAT_KEYWORD)) return floatDeclaration();
-//            if (match(CHAR_KEYWORD)) return charDeclaration();
-//            if (match(BOOL_KEYWORD)) return boolDeclaration();
+            // if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)) return varDeclaration();
+           if (match(INT_KEYWORD)) return varDeclaration("INT");
+           if (match(FLOAT_KEYWORD)) return varDeclaration("FLOAT");
+           if (match(CHAR_KEYWORD)) return varDeclaration("CHAR");
+           if (match(BOOL_KEYWORD)) return varDeclaration("BOOL");
+           if (match(STRING_KEYWORD)) return varDeclaration("STRING");
 
             return statement();
         } catch (ParseError error) {
@@ -62,20 +63,21 @@ public class Parser {
         }
     }
 
-    private code.Stmt varDeclaration() { //ORIGINAL
-        Token datatype = previous(); // Capture the datatype token
+    //original
+//     private code.Stmt varDeclaration() { //ORIGINAL
+//         Token datatype = previous(); // Capture the datatype token
 
-        Token name = consume(IDENTIFIER, "Expect variable name.");
+//         Token name = consume(IDENTIFIER, "Expect variable name.");
 
-        Expr initializer = null;
-        if (match(EQUAL)) {
-            initializer = expression();
+//         Expr initializer = null;
+//         if (match(EQUAL)) {
+//             initializer = expression();
 
-            // Check if the assigned value matches the datatype
-//            if (!checkDatatype(initializer, datatype.type)){
-//                throw error(previous(), "Datatype mismatch in variable declaration.");
-//            }
-        }
+//             // Check if the assigned value matches the datatype
+// //            if (!checkDatatype(initializer, datatype.type)){
+// //                throw error(previous(), "Datatype mismatch in variable declaration.");
+// //            }
+//         }
 
 //        return new Stmt.Var(name, initializer); -->orig
 //        if(validType){
@@ -83,7 +85,34 @@ public class Parser {
 //            environment.defineDataType(name.lexeme, datatype.lexeme); //executes as intended
 //        }
 
-        return new code.Stmt.Var(name, initializer);
+    //     return new code.Stmt.Var(name, initializer);
+    // }
+
+    private Stmt varDeclaration(String datatype) { 
+        Token name = consume(IDENTIFIER, "Expect variable name.");
+
+        Expr initializer = null;
+        if (match(EQUAL)) {
+            initializer = expression();
+        }
+
+        switch(datatype){
+            case "INT":
+                return new Stmt.Int(name, initializer);
+            case "CHAR":
+                return new Stmt.Char(name, initializer);
+            case "BOOL":
+                return new Stmt.Bool(name, initializer);
+            case "FLOAT":
+                return new Stmt.Float(name, initializer);
+            case "STRING":
+                return new Stmt.String(name, initializer);
+            default:
+                break;
+                
+        }
+        
+        return null;
     }
 
     //-----------------------additional code[start]-----------------

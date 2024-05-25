@@ -333,7 +333,7 @@ class Scanner {
         } else if (value.equals("FALSE")){
             addToken(FALSE, Boolean.parseBoolean(value));
         } else {
-            addToken(STRING, value);
+            addToken(STRING_LITERAL, value);
         }
     }
     //-----------------------------DATA TYPE [END] ---------------
