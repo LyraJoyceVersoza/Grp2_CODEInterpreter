@@ -285,124 +285,119 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return value;
     }
 
+    private Number getNumType(Object obj) {
+        if (obj instanceof Integer) {
+            return (int) obj;
+        }
+        if (obj instanceof Float) {
+            return (double) obj;
+        }
+        if (obj instanceof Double) {
+            return (double) obj;
+        }
+        return null;
+    }
+
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
         Object left = evaluate(expr.left);
         Object right = evaluate(expr.right);
-//
-// find a way to be able to make use of this method
+        Number leftVal = getNumType(left);
+        Number rightVal = getNumType(right);
+
         switch (expr.operator.type) {
-//            case GREATER:
-//                checkNumberOperands(expr.operator, left, right);
-//                return (double)left > (double)right;
-//            case GREATER_EQUAL:
-//                checkNumberOperands(expr.operator, left, right);
-//                return (double)left >= (double)right;
-//            case LESS:
-//                checkNumberOperands(expr.operator, left, right);
-//                return (double)left < (double)right;
-//            case LESS_EQUAL:
-//                checkNumberOperands(expr.operator, left, right);
-//                return (double)left <= (double)right;
-//            case MINUS:
-//                checkNumberOperands(expr.operator, left, right);
-//                return (double)left - (double)right;
-//            case PLUS:
-//                if (left instanceof Double && right instanceof Double) {
-//                    return (double)left + (double)right;
-//                }
-//
-//                if (left instanceof String && right instanceof String) {
-//                    return (String)left + (String)right;
-//                }
-//                throw new RuntimeError(expr.operator,
-//                        "Operands must be two numbers or two strings.");
-////                break;
-//            case SLASH:
-//                checkNumberOperands(expr.operator, left, right);
-//                return (double)left / (double)right;
-//            case STAR:
-//                checkNumberOperands(expr.operator, left, right);
-//                return (double)left * (double)right;
             case NEXT_LINE:
                 return (stringify(left) + "\n" + stringify(right));
+            case CONCAT:
+                return stringify(left) + stringify(right);
+           case GREATER:                    
+                if(leftVal instanceof Integer && rightVal instanceof Integer){
+                    return leftVal.intValue() > rightVal.intValue();
+                }
+                if(leftVal instanceof Float && rightVal instanceof Float){
+                    return leftVal.floatValue() > rightVal.floatValue();
+                }
+               return leftVal.doubleValue() > rightVal.doubleValue();
+           case GREATER_EQUAL:
+                if(leftVal instanceof Integer && rightVal instanceof Integer){
+                    return leftVal.intValue() >= rightVal.intValue();
+                }
+                if(leftVal instanceof Float && rightVal instanceof Float){
+                    return leftVal.floatValue() >= rightVal.floatValue();
+                }
+                return leftVal.doubleValue() >= rightVal.doubleValue();
+           case LESS:
+                if(leftVal instanceof Integer && rightVal instanceof Integer){
+                return leftVal.intValue() < rightVal.intValue();
+                }
+                if(leftVal instanceof Float && rightVal instanceof Float){
+                    return leftVal.floatValue() < rightVal.floatValue();
+                }
+                return leftVal.doubleValue() < rightVal.doubleValue();
+           case LESS_EQUAL:
+                if(leftVal instanceof Integer && rightVal instanceof Integer){
+                    return leftVal.intValue() <= rightVal.intValue();
+                }
+                if(leftVal instanceof Float && rightVal instanceof Float){
+                    return leftVal.floatValue() <= rightVal.floatValue();
+                }
+                return leftVal.doubleValue() <= rightVal.doubleValue();
+           case MINUS:
+                if(leftVal instanceof Integer && rightVal instanceof Integer){
+                    return leftVal.intValue() - rightVal.intValue();
+                }
+                if(leftVal instanceof Float && rightVal instanceof Float){
+                    return leftVal.floatValue() - rightVal.floatValue();
+                }
+                return leftVal.doubleValue() - rightVal.doubleValue();
+           case PLUS:
+                if(leftVal instanceof Integer && rightVal instanceof Integer){
+                    return leftVal.intValue() + rightVal.intValue();
+                }
+                if(leftVal instanceof Float && rightVal instanceof Float){
+                    return leftVal.floatValue() + rightVal.floatValue();
+                }
+                return leftVal.doubleValue() + rightVal.doubleValue();
+           case SLASH:
+                if (rightVal.doubleValue() == 0) {
+                    throw new RuntimeError(expr.operator, "Division by zero.");
+                }
+                if(leftVal instanceof Integer && rightVal instanceof Integer){
+                    return leftVal.intValue() / rightVal.intValue();
+                }
+                if(leftVal instanceof Float && rightVal instanceof Float){
+                    return leftVal.floatValue() / rightVal.floatValue();
+                }
+                return leftVal.doubleValue() / rightVal.doubleValue();
+           case STAR:
+                if(leftVal instanceof Integer && rightVal instanceof Integer){
+                    return leftVal.intValue() * rightVal.intValue();
+                }
+                if(leftVal instanceof Float && rightVal instanceof Float){
+                    return leftVal.floatValue() * rightVal.floatValue();
+                }
+                return leftVal.doubleValue() * rightVal.doubleValue();       
+            case MODULO:
+                if (rightVal.doubleValue() == 0) {
+                    throw new RuntimeError(expr.operator, "Division by zero.");
+                }
+                if(leftVal instanceof Integer && rightVal instanceof Integer){
+                    return leftVal.intValue() % rightVal.intValue();
+                }
+                if(leftVal instanceof Float && rightVal instanceof Float){
+                    return leftVal.floatValue() % rightVal.floatValue();
+                }
+                return leftVal.doubleValue() % rightVal.doubleValue();      
             case NOT_EQUAL:
                 return !isEqual(left, right);
             case EQUAL_EQUAL:
                 return isEqual(left, right);
-//        }
             default:
-                // Check if either operand is a string, if so, perform string concatenation
-                if (expr.operator.type == TokenType.CONCAT && (left instanceof String || right instanceof String)) {
-                    return stringify(left) + stringify(right);
-                }
-
-                // Otherwise, perform arithmetic operations
-                if (left instanceof Double || right instanceof Double) {
-                    double l = ((Number) left).doubleValue();
-                    double r = ((Number) right).doubleValue();
-                    return switch (expr.operator.type) {
-                        case GREATER -> l > r;
-                        case GREATER_EQUAL -> l >= r;
-                        case LESS -> l < r;
-                        case LESS_EQUAL -> l <= r;
-                        case MINUS -> l - r;
-                        case PLUS -> l + r;
-                        case MODULO -> l % r;
-                        case SLASH -> {
-                            if (r == 0) {
-                                throw new RuntimeError(expr.operator, "Division by zero.");
-                            }
-                            yield l / r;
-                        }
-                        case STAR -> l * r;
-                        default -> throw new RuntimeError(expr.operator, "Invalid binary operator for numbers.");
-                    };
-                } else if (left instanceof Float || right instanceof Float) {
-                    float l = ((Number) left).floatValue();
-                    float r = ((Number) right).floatValue();
-                    return switch (expr.operator.type) {
-                        case GREATER -> l > r;
-                        case GREATER_EQUAL -> l >= r;
-                        case LESS -> l < r;
-                        case LESS_EQUAL -> l <= r;
-                        case MINUS -> l - r;
-                        case PLUS -> l + r;
-                        case MODULO -> l % r;
-                        case SLASH -> {
-                            if (r == 0) {
-                                throw new RuntimeError(expr.operator, "Division by zero.");
-                            }
-                            yield l / r;
-                        }
-                        case STAR -> l * r;
-                        default -> throw new RuntimeError(expr.operator, "Invalid binary operator for numbers.");
-                    };
-                } else {
-                    int l = ((Number) left).intValue();
-                    int r = ((Number) right).intValue();
-                    return switch (expr.operator.type) {
-                        case GREATER -> l > r;
-                        case GREATER_EQUAL -> l >= r;
-                        case LESS -> l < r;
-                        case LESS_EQUAL -> l <= r;
-                        case MINUS -> l - r;
-                        case PLUS -> l + r;
-                        case MODULO -> l % r;
-                        case SLASH -> {
-                            if (r == 0) {
-                                throw new RuntimeError(expr.operator, "Division by zero.");
-                            }
-                            yield l / r;
-                        }
-                        case STAR -> l * r;
-                        default -> throw new RuntimeError(expr.operator, "Invalid binary operator for numbers.");
-                    };
-                }
+                break;                
         }
 
         // Unreachable.
-//        return null;
+       return null;
     }
 
 }
