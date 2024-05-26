@@ -64,6 +64,7 @@ class Scanner {
         keywords.put("CHAR",  CHAR_KEYWORD);
         keywords.put("BOOL",  BOOL_KEYWORD);
         keywords.put("FLOAT",  FLOAT_KEYWORD);
+        keywords.put("STRING",  STRING_KEYWORD);
     }
 
     Scanner(String source) {
@@ -309,7 +310,7 @@ class Scanner {
             if (peek() == '$') {
                 
                 String val = source.substring(start + 1, current);
-                addToken(STRING, val);
+                addToken(STRING_LITERAL, val);
                 addToken(NEXT_LINE);
                 start = current;
                 line++;
@@ -333,7 +334,7 @@ class Scanner {
         } else if (value.equals("FALSE")){
             addToken(FALSE, Boolean.parseBoolean(value));
         } else {
-            addToken(STRING, value);
+            addToken(STRING_LITERAL, value);
         }
     }
     //-----------------------------DATA TYPE [END] ---------------

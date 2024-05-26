@@ -22,7 +22,8 @@ class Environment {
             return values.get(name.lexeme);
         }
 
-        if (enclosing != null) return enclosing.get(name);
+        if (enclosing != null) 
+            return enclosing.get(name);
 
         throw new RuntimeError(name,
                 "Undefined variable '" + name.lexeme + "'.");
@@ -60,38 +61,6 @@ class Environment {
     void assign(Token name, Object value) {
         if (values.containsKey(name.lexeme)) {
 
-//            for(String dt:values.keySet()){
-//                String key =  dt.toString();
-//                String val = values.get(dt).toString();
-//                System.out.println(key + " " + val);
-//            }
-
-//            System.out.println("vardata" + values.get(name.lexeme));
-
-//            String dt = getdataType(name); //problem
-//            boolean matchAssigned = false;
-//            String valueDT;
-//
-//            switch (dt){
-//                case "INT":
-//                    if (value instanceof Integer)
-//                        matchAssigned=true;
-//                    break;
-//                case "CHAR":
-//                    if (value instanceof Character)
-//                        matchAssigned=true;
-//                    break;
-//                case "BOOL":
-//                    if (value instanceof Boolean)
-//                        matchAssigned=true;
-//                    break;
-//                case "FLOAT":
-//                    if (value instanceof Float)
-//                        matchAssigned=true;
-//                    break;
-//            }
-//
-//            if(matchAssigned) {
             values.put(name.lexeme, value);
             return;
 //            }
@@ -109,20 +78,10 @@ class Environment {
                 "Undefined variable '" + name.lexeme + "'.");
     }
 
-    void define(String name, Object value) {
-        values.put(name, value);
-//        System.out.println(values.get(name) + "added to values hashmap");
-    }
-
-    void defineDataType(String name, String dataType) {
-        dataTypes.put(name, dataType); //does get added
-//        System.out.println(dataTypes.get(name) + "added to datatypes hashmap");
-//        for(String dt:dataTypes.keySet()){
-//            String key =  dt.toString();
-//            String value = dataTypes.get(dt).toString();
-//            System.out.println(key + " " + value);
-//        }
-//        return dataType;
+    void define(String varName, Object value, String dataType) {
+        values.put(varName, value);
+        dataTypes.put(varName, dataType);
+    //    System.out.println(values.get(name) + "added to values hashmap");
     }
 
 }

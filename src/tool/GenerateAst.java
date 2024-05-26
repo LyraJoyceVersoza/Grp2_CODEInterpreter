@@ -28,8 +28,14 @@ public class GenerateAst {
                 "Expression : Expr expression",
                 "If         : Expr condition, Stmt thenBranch," +
                         " Stmt elseBranch",
-                "Print      : Expr expression",
-                "Var        : Token name, Expr initializer",
+                "Display      : Expr expression",
+                "Scan      : Token name, Expr initializer",
+                "Int        : Token name, Expr initializer",
+                "Char        : Token name, Expr initializer",
+                "Float        : Token name, Expr initializer",
+                "Bool        : Token name, Expr initializer",
+                "String        : Token name, Expr initializer",
+                "MultiVar        : String type, List<Token> names, List<Expr> initializers",
                 "While      : Expr condition, Stmt body"
         ));
     }
@@ -40,7 +46,7 @@ public class GenerateAst {
         String path = outputDir + "/" + baseName + ".java";
         PrintWriter writer = new PrintWriter(path, "UTF-8");
 
-        writer.println("package lox;");
+        writer.println("package code;");
         writer.println();
         writer.println("import java.util.List;");
         writer.println();
