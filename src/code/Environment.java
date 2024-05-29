@@ -29,44 +29,15 @@ class Environment {
                 "Undefined variable '" + name.lexeme + "'.");
     }
 
-//    String getdataType(Token varName) {
-//
-//        if (dataTypes.containsKey(varName.lexeme)) { //returns false
-////            System.out.println("varname is " + varName.lexeme);
-//            return dataTypes.get(varName.lexeme);
-//        }
-//
-//        if (enclosing != null) return enclosing.getdataType(varName);
-//
-//        throw new RuntimeError(varName,
-//                "Undefined variable '" + varName.lexeme + " aguy'.");
-//    }
-
-//    void assign(Token name, Object value) {
-//        if (values.containsKey(name.lexeme)) {
-//            values.put(name.lexeme, value);
-//            return;
-//        }
-//
-//        if (enclosing != null) {
-//            enclosing.assign(name, value);
-//            return;
-//        }
-//
-//        throw new RuntimeError(name,
-//                "Undefined variable '" + name.lexeme + "'.");
-//    }
-// ------> above is orig
+    String getDataType(String varName) {
+        String varType = dataTypes.get(varName);
+        return varType;       
+    }
 
     void assign(Token name, Object value) {
         if (values.containsKey(name.lexeme)) {
-
             values.put(name.lexeme, value);
             return;
-//            }
-//
-//            throw new RuntimeError(name,
-//                "Cannot assign to a variable of type" + dt);
         }
 
         if (enclosing != null) {
@@ -74,14 +45,12 @@ class Environment {
             return;
         }
 
-        throw new RuntimeError(name,
-                "Undefined variable '" + name.lexeme + "'.");
+        throw new RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
     }
 
     void define(String varName, Object value, String dataType) {
         values.put(varName, value);
         dataTypes.put(varName, dataType);
-    //    System.out.println(values.get(name) + "added to values hashmap");
     }
 
 }

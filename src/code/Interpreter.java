@@ -1,8 +1,9 @@
 package code;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
-import com.sun.jdi.FloatValue;
-import com.sun.jdi.IntegerValue;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
@@ -47,16 +48,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 if(right instanceof Integer) {
                     return -(int)right;
                 }
-                else if (right instanceof Float) {
-                    return -(float)right;
+                else if (right instanceof Double) {
+                    return -(double)right;
                 }
             case PLUS: 
                 checkNumberOperand(expr.operator, right);
                 if(right instanceof Integer) {
                     return +(int)right;
                 }
-                else if (right instanceof Float) {
-                    return +(float)right;
+                else if (right instanceof Double) {
+                    return +(double)right;
                 }
             case NEXT_LINE:
                 return "\n" + stringify(right);
@@ -72,7 +73,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     private void checkNumberOperand(Token operator, Object operand) {
-        if (operand instanceof Integer || operand instanceof Float) return;
+        if (operand instanceof Integer || operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");
     }
 
@@ -111,7 +112,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 text = text.substring(0, text.length() - 2);
             }
             return text;
-        }
+        }        
 
         return object.toString();
     }
@@ -173,25 +174,100 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Void visitScanStmt(Stmt.Scan stmt) {
+    public Void visitScanStmt(Stmt.Scan stmt) {       
+        try {
+            //scans the user input
+            Object scannedValue = scanEntry();
+
+            //retrieves datatype associated with the variable name from Environment
+            String dataType = environment.getDataType(stmt.name.lexeme);
+
+            //gets the String of the datatype of the value
+            String dtSimpleName = scannedValue.getClass().getSimpleName();
+            String passedDataType;            
+
+            switch(dtSimpleName){
+                case "Integer":
+                    passedDataType = "INT";
+                    break;
+                case "Character":
+                    passedDataType = "CHAR";
+                    break;
+                case "Boolean":
+                    passedDataType = "BOOL";
+                    break;
+                case "Double":
+                    passedDataType = "FLOAT";
+                    break;
+                case "String":
+                    passedDataType = "STRING";
+                    break;
+                default:
+                    throw new RuntimeError(stmt.name, "di ni mao uie " + dataType);                    
+            }    
+
+            if (dataType.equals(passedDataType)) {
+                environment.assign(stmt.name, scannedValue);
+                return null;
+            }
+
+            throw new RuntimeError(stmt.name, "Input must be of type " + dataType);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return null;
+    }
+
+    private Object scanEntry() throws IOException{
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+        String line = reader.readLine().trim(); 
+
+        try {
+            int intValue = Integer.parseInt(line);
+            System.out.println("scanInput : " + intValue);
+            return intValue;
+        } catch (NumberFormatException ignored) {
+        }
+
+        try {
+            double doubleValue = Double.parseDouble(line);
+            System.out.println("scanInput : " + doubleValue);
+            return doubleValue;
+        } catch (NumberFormatException ignored) {
+        }
+
+        if (line.length() == 1) {
+            char charValue = line.charAt(0);
+            return charValue;
+        } 
+        
+        if (line.equals("\"TRUE\"")){
+            return true;               
+        } else if (line.equals("\"FALSE\"")){
+            return false;        
+        }             
+
+        return line;         
     }
 
     @Override
     public Void visitMultiVarStmt(Stmt.MultiVar stmt) {
+        for (int i = 0; i < stmt.names.size(); i++) {
+            Token name = stmt.names.get(i);
+            Expr initializer = stmt.initializers.get(i);
+
+            Object value = null;
+            if (initializer != null) {
+                value = evaluate(initializer);
+            } else {
+                value = null;
+            }
+
+            environment.assign(name, value);
+        }
         return null;
     }
-
-    // @Override
-    // public Void visitVarStmt(code.Stmt.Var stmt) {
-    //     Object value = null;
-    //     if (stmt.initializer != null) {
-    //         value = evaluate(stmt.initializer);
-    //     }
-
-    //     environment.define(stmt.name.lexeme, value);
-    //     return null;
-    // }
 
     @Override
     public Void visitIntStmt(Stmt.Int stmt) {
@@ -229,7 +305,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Object value = null;
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
-            if(!(value instanceof Float)){
+            if(!(value instanceof Double)){
                 throw new RuntimeError(stmt.name, "Instance must be a float.");
             }
         }
@@ -289,9 +365,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (obj instanceof Integer) {
             return (int) obj;
         }
-        if (obj instanceof Float) {
-            return (double) obj;
-        }
         if (obj instanceof Double) {
             return (double) obj;
         }
@@ -300,104 +373,81 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
-        Object left = evaluate(expr.left);
-        Object right = evaluate(expr.right);
-        Number leftVal = getNumType(left);
-        Number rightVal = getNumType(right);
+        try{
+            Object left = evaluate(expr.left);
+            Object right = evaluate(expr.right);
+            Number leftVal = getNumType(left);
+            Number rightVal = getNumType(right);
 
-        switch (expr.operator.type) {
-            case NEXT_LINE:
-                return (stringify(left) + "\n" + stringify(right));
-            case CONCAT:
-                return stringify(left) + stringify(right);
-           case GREATER:                    
-                if(leftVal instanceof Integer && rightVal instanceof Integer){
-                    return leftVal.intValue() > rightVal.intValue();
-                }
-                if(leftVal instanceof Float && rightVal instanceof Float){
-                    return leftVal.floatValue() > rightVal.floatValue();
-                }
-               return leftVal.doubleValue() > rightVal.doubleValue();
-           case GREATER_EQUAL:
-                if(leftVal instanceof Integer && rightVal instanceof Integer){
-                    return leftVal.intValue() >= rightVal.intValue();
-                }
-                if(leftVal instanceof Float && rightVal instanceof Float){
-                    return leftVal.floatValue() >= rightVal.floatValue();
-                }
-                return leftVal.doubleValue() >= rightVal.doubleValue();
-           case LESS:
-                if(leftVal instanceof Integer && rightVal instanceof Integer){
-                return leftVal.intValue() < rightVal.intValue();
-                }
-                if(leftVal instanceof Float && rightVal instanceof Float){
-                    return leftVal.floatValue() < rightVal.floatValue();
-                }
-                return leftVal.doubleValue() < rightVal.doubleValue();
-           case LESS_EQUAL:
-                if(leftVal instanceof Integer && rightVal instanceof Integer){
-                    return leftVal.intValue() <= rightVal.intValue();
-                }
-                if(leftVal instanceof Float && rightVal instanceof Float){
-                    return leftVal.floatValue() <= rightVal.floatValue();
-                }
-                return leftVal.doubleValue() <= rightVal.doubleValue();
-           case MINUS:
-                if(leftVal instanceof Integer && rightVal instanceof Integer){
-                    return leftVal.intValue() - rightVal.intValue();
-                }
-                if(leftVal instanceof Float && rightVal instanceof Float){
-                    return leftVal.floatValue() - rightVal.floatValue();
-                }
-                return leftVal.doubleValue() - rightVal.doubleValue();
-           case PLUS:
-                if(leftVal instanceof Integer && rightVal instanceof Integer){
-                    return leftVal.intValue() + rightVal.intValue();
-                }
-                if(leftVal instanceof Float && rightVal instanceof Float){
-                    return leftVal.floatValue() + rightVal.floatValue();
-                }
-                return leftVal.doubleValue() + rightVal.doubleValue();
-           case SLASH:
-                if (rightVal.doubleValue() == 0) {
-                    throw new RuntimeError(expr.operator, "Division by zero.");
-                }
-                if(leftVal instanceof Integer && rightVal instanceof Integer){
-                    return leftVal.intValue() / rightVal.intValue();
-                }
-                if(leftVal instanceof Float && rightVal instanceof Float){
-                    return leftVal.floatValue() / rightVal.floatValue();
-                }
-                return leftVal.doubleValue() / rightVal.doubleValue();
-           case STAR:
-                if(leftVal instanceof Integer && rightVal instanceof Integer){
-                    return leftVal.intValue() * rightVal.intValue();
-                }
-                if(leftVal instanceof Float && rightVal instanceof Float){
-                    return leftVal.floatValue() * rightVal.floatValue();
-                }
-                return leftVal.doubleValue() * rightVal.doubleValue();       
-            case MODULO:
-                if (rightVal.doubleValue() == 0) {
-                    throw new RuntimeError(expr.operator, "Division by zero.");
-                }
-                if(leftVal instanceof Integer && rightVal instanceof Integer){
-                    return leftVal.intValue() % rightVal.intValue();
-                }
-                if(leftVal instanceof Float && rightVal instanceof Float){
-                    return leftVal.floatValue() % rightVal.floatValue();
-                }
-                return leftVal.doubleValue() % rightVal.doubleValue();      
-            case NOT_EQUAL:
-                return !isEqual(left, right);
-            case EQUAL_EQUAL:
-                return isEqual(left, right);
-            default:
-                break;                
+            switch (expr.operator.type) {
+                case NEXT_LINE:
+                    return (stringify(left) + "\n" + stringify(right));
+                case CONCAT:
+                    return stringify(left) + stringify(right);
+            case GREATER:                    
+                    if(leftVal instanceof Integer && rightVal instanceof Integer){
+                        return leftVal.intValue() > rightVal.intValue();
+                    }
+                return leftVal.doubleValue() > rightVal.doubleValue();
+            case GREATER_EQUAL:
+                    if(leftVal instanceof Integer && rightVal instanceof Integer){
+                        return leftVal.intValue() >= rightVal.intValue();
+                    }
+                    return leftVal.doubleValue() >= rightVal.doubleValue();
+            case LESS:
+                    if(leftVal instanceof Integer && rightVal instanceof Integer){
+                    return leftVal.intValue() < rightVal.intValue();
+                    }
+                    return leftVal.doubleValue() < rightVal.doubleValue();
+            case LESS_EQUAL:
+                    if(leftVal instanceof Integer && rightVal instanceof Integer){
+                        return leftVal.intValue() <= rightVal.intValue();
+                    }
+                    return leftVal.doubleValue() <= rightVal.doubleValue();
+            case MINUS:
+                    if(leftVal instanceof Integer && rightVal instanceof Integer){
+                        return leftVal.intValue() - rightVal.intValue();
+                    }
+                    return leftVal.doubleValue() - rightVal.doubleValue();
+            case PLUS:
+                    if(leftVal instanceof Integer && rightVal instanceof Integer){
+                        return leftVal.intValue() + rightVal.intValue();
+                    }
+                    return leftVal.doubleValue() + rightVal.doubleValue();
+            case SLASH:
+                    if (rightVal.doubleValue() == 0) {
+                        throw new RuntimeError(expr.operator, "Division by zero.");
+                    }
+                    if(leftVal instanceof Integer && rightVal instanceof Integer){
+                        return leftVal.intValue() / rightVal.intValue();
+                    }
+                    return leftVal.doubleValue() / rightVal.doubleValue();
+            case STAR:
+                    if(leftVal instanceof Integer && rightVal instanceof Integer){
+                        return leftVal.intValue() * rightVal.intValue();
+                    }
+                    return leftVal.doubleValue() * rightVal.doubleValue();       
+                case MODULO:
+                    if (rightVal.doubleValue() == 0) {
+                        throw new RuntimeError(expr.operator, "Division by zero.");
+                    }
+                    if(leftVal instanceof Integer && rightVal instanceof Integer){
+                        return leftVal.intValue() % rightVal.intValue();
+                    }
+                    return leftVal.doubleValue() % rightVal.doubleValue();      
+                case NOT_EQUAL:
+                    return !isEqual(left, right);
+                case EQUAL_EQUAL:
+                    return isEqual(left, right);
+                default:
+                    break;                        
+            }
+        } catch (NullPointerException e) {
+            throw new RuntimeError(expr.operator, "Unexpected null value encountered.");
         }
 
         // Unreachable.
-       return null;
+        return null;
     }
 
 }
