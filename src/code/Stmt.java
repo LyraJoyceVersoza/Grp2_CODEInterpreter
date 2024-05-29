@@ -70,9 +70,8 @@ abstract class Stmt {
     final Expr expression;
   }
   static class Scan extends Stmt {
-    Scan(Token name, Expr initializer) {
-      this.name = name;
-      this.initializer = initializer;
+    Scan(List <Token> variables) {
+      this.variables = variables;
     }
 
     @Override
@@ -80,8 +79,7 @@ abstract class Stmt {
       return visitor.visitScanStmt(this);
     }
 
-    final Token name;
-    final Expr initializer;
+    final List <Token> variables;
   }
   static class Int extends Stmt {
     Int(Token name, Expr initializer) {
