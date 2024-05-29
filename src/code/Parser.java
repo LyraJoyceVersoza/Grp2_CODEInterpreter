@@ -87,54 +87,6 @@ public class Parser {
         return stmts;
     }
 
-    //original
-//     private Stmt declaration() {
-//         try {
-// //            if (match(VAR)) return varDeclaration();
-// //            -->original
-//             // if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)) return varDeclaration();
-//            if (match(INT_KEYWORD)) return varDeclaration("INT");
-//            if (match(FLOAT_KEYWORD)) return varDeclaration("FLOAT");
-//            if (match(CHAR_KEYWORD)) return varDeclaration("CHAR");
-//            if (match(BOOL_KEYWORD)) return varDeclaration("BOOL");
-//            if (match(STRING_KEYWORD)) return varDeclaration("STRING");
-
-//             return statement();
-//         } catch (ParseError error) {
-//             synchronize();
-//             return null;
-//         }
-//     }
-
-    //original
-    // private code.Stmt varDeclaration(String datatype) { //ORIGINAL
-    //     Token name = consume(IDENTIFIER, "Expect variable name.");
-
-    //     Expr initializer = null;
-    //     if (match(EQUAL)) {
-    //         initializer = expression();
-    //     }
-
-    //     switch(datatype){
-    //         case "INT":
-    //             return new Stmt.Int(name, initializer);
-    //         case "CHAR":
-    //             return new Stmt.Char(name, initializer);
-    //         case "BOOL":
-    //             return new Stmt.Bool(name, initializer);
-    //         case "FLOAT":
-    //             return new Stmt.Float(name, initializer);
-    //         case "STRING":
-    //             return new Stmt.String(name, initializer);
-    //         default:
-    //             break;
-                
-    //     }
-
-    //    return null;
-     
-    // }
-
     private List<Stmt> varDeclaration(String datatype) { 
         List<Token> names = new ArrayList<>();
         List<Expr> initializers = new ArrayList<>();
@@ -231,6 +183,12 @@ public class Parser {
             }
         }
 
+        if (match(SCAN)) {
+            if(match(COLON)){
+                return scanStatement();
+            }
+        }
+
         if (match(WHILE)) return whileStatement();
 
         if (match(BEGIN)) {
@@ -297,6 +255,11 @@ public class Parser {
         return new Stmt.Display(value);
     }
 
+    private code.Stmt scanStatement() {
+        Token variable = consume(IDENTIFIER, "Expect variable after SCAN:");
+        return new Stmt.Scan(variable, null);
+    }
+
     private code.Stmt whileStatement() {
         consume(LEFT_PAREN, "Expect '(' after 'while'.");
         Expr condition = expression();
@@ -347,11 +310,8 @@ public class Parser {
 
             if (expr instanceof Expr.Variable) {
                 Token name = ((Expr.Variable)expr).name;
-//                Token datatype = ((Expr.Variable) expr).dataType;
                 return new Expr.Assign(name, value);
             }
-
-
 
             error(equals, "Invalid assignment target.");
         }
