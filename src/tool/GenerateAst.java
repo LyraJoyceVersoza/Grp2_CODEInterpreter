@@ -29,7 +29,7 @@ public class GenerateAst {
                 "If         : Expr condition, Stmt thenBranch," +
                         " Stmt elseBranch",
                 "Display      : Expr expression",
-                "Scan      : Token name, Expr initializer",
+                "Scan      : List <Token> variables",
                 "Int        : Token name, Expr initializer",
                 "Char        : Token name, Expr initializer",
                 "Float        : Token name, Expr initializer",

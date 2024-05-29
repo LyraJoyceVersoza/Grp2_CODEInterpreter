@@ -261,8 +261,13 @@ public class Parser {
     }
 
     private code.Stmt scanStatement() {
-        Token variable = consume(IDENTIFIER, "Expect variable after SCAN:");
-        return new Stmt.Scan(variable, null);
+        List<Token> variables = new ArrayList<>();
+
+        do {
+            variables.add(consume(TokenType.IDENTIFIER, "Expect variable name."));
+        } while (match(TokenType.COMMA));
+
+        return new Stmt.Scan(variables);
     }
 
     private code.Stmt whileStatement() {
@@ -288,13 +293,6 @@ public class Parser {
 
     private List<code.Stmt> block() {
         List<code.Stmt> statements = new ArrayList<>();
-
-//        while (!check(RIGHT_BRACE) && !isAtEnd()) {
-//            statements.add(declaration());
-//        }
-//
-//        consume(RIGHT_BRACE, "Expect '}' after block.");
-//        -->GUIDE
 
         while (!(check(END)) && !isAtEnd()) {
             statements.addAll(declaration());

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Scanner;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
@@ -174,81 +175,80 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Void visitScanStmt(Stmt.Scan stmt) {       
-        try {
-            //scans the user input
-            Object scannedValue = scanEntry();
+    public Void visitScanStmt(Stmt.Scan stmt) {
+            // read input from the user
+            Scanner scanner = new Scanner(System.in);
+            String input = scanner.nextLine();
+            
+            // splits input string by commas
+            String[] values = input.split(",");
 
-            //retrieves datatype associated with the variable name from Environment
-            String dataType = environment.getDataType(stmt.name.lexeme);
-
-            //gets the String of the datatype of the value
-            String dtSimpleName = scannedValue.getClass().getSimpleName();
-            String passedDataType;            
-
-            switch(dtSimpleName){
-                case "Integer":
-                    passedDataType = "INT";
-                    break;
-                case "Character":
-                    passedDataType = "CHAR";
-                    break;
-                case "Boolean":
-                    passedDataType = "BOOL";
-                    break;
-                case "Double":
-                    passedDataType = "FLOAT";
-                    break;
-                case "String":
-                    passedDataType = "STRING";
-                    break;
-                default:
-                    throw new RuntimeError(stmt.name, "di ni mao uie " + dataType);                    
-            }    
-
-            if (dataType.equals(passedDataType)) {
-                environment.assign(stmt.name, scannedValue);
-                return null;
+            // checks if the number of input values matches the number of variables
+            if (values.length != stmt.variables.size()) {
+                throw new RuntimeError(stmt.variables.get(0), "Expected " + stmt.variables.size() + " values but got " + values.length + ".");
             }
 
-            throw new RuntimeError(stmt.name, "Input must be of type " + dataType);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            // assign each value to the corresponding variable
+            for (int i = 0; i < stmt.variables.size(); i++) {
+                Token variable = stmt.variables.get(i);
+                Object value = parseValue(values[i].trim());
+
+                // retrieve the expected data type associated with the variable name from the environment
+                String dataType = environment.getDataType(variable.lexeme);
+
+                // validates data type of input value
+                if (!isValidType(value, dataType)) {
+                    throw new RuntimeError(variable, "Input must be of type " + dataType);
+                }
+
+                // Assign the value to the variable
+                environment.assign(variable, value);
+            }
+        
         return null;
     }
 
-    private Object scanEntry() throws IOException{
-        InputStreamReader input = new InputStreamReader(System.in);
-        BufferedReader reader = new BufferedReader(input);
-        String line = reader.readLine().trim(); 
+    private Object parseValue(String value) {
+        // Try to parse the value as different types
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ignored) { }
 
         try {
-            int intValue = Integer.parseInt(line);
-            System.out.println("scanInput : " + intValue);
-            return intValue;
-        } catch (NumberFormatException ignored) {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException ignored) { }
+
+        if (value.length() == 1) {
+            return value.charAt(0);
         }
 
-        try {
-            double doubleValue = Double.parseDouble(line);
-            System.out.println("scanInput : " + doubleValue);
-            return doubleValue;
-        } catch (NumberFormatException ignored) {
+        if (value.equals("\"TRUE\"")) {
+            return true;
         }
 
-        if (line.length() == 1) {
-            char charValue = line.charAt(0);
-            return charValue;
-        } 
-        
-        if (line.equals("\"TRUE\"")){
-            return true;               
-        } else if (line.equals("\"FALSE\"")){
-            return false;        
-        }             
+        if (value.equals("\"FALSE\"")) {
+            return false;
+        }
 
-        return line;         
+        return value; // Treat as string if no other type matches
+    }
+
+    private boolean isValidType(Object value, String dataType) {
+        // Check if the value's type matches the expected data type
+        switch (dataType) {
+            case "INT":
+                return value instanceof Integer;
+            case "FLOAT":
+                return value instanceof Double;
+            case "CHAR":
+                return value instanceof Character;
+            case "BOOL":
+                return value instanceof Boolean;
+            case "STRING":
+                return value instanceof String;
+            default:
+                return false;
+        }
     }
 
     @Override
