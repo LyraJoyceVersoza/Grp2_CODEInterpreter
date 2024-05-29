@@ -9,8 +9,7 @@ public class Parser {
     private static class ParseError extends RuntimeException {}
 
     private final List<Token> tokens;
-    private Environment environment = new Environment();
-    private boolean varDeclarationStart = false;
+    private boolean executableCodeStart = false;
     private int current = 0;
     private boolean BEGINflag = false;
     private boolean ENDflag = false;
@@ -93,31 +92,26 @@ public class Parser {
 
         TokenType tokenType;
 
-        // if (executableStarted) {
-        //     Code.error(current, "Cannot declare variable after executable code");
-        // }
+        if (executableCodeStart) {
+            Code.error(current, "Cannot declare variables after executable code.");
+        }
         
         //saves the datatype declared
         switch(datatype){
             case "INT":
                 tokenType = TokenType.INT_KEYWORD;
-                varDeclarationStart = true;
                 break;
             case "CHAR":
                 tokenType = TokenType.CHAR_KEYWORD;
-                varDeclarationStart = true;
                 break;
             case "BOOL":
                 tokenType = TokenType.BOOL_KEYWORD;
-                varDeclarationStart = true;
                 break;
             case "FLOAT":
                 tokenType = TokenType.FLOAT_KEYWORD;
-                varDeclarationStart = true;
                 break;
             case "STRING":
                 tokenType = TokenType.STRING_KEYWORD;
-                varDeclarationStart = true;
                 break;
             default:
                 System.out.println("Datatype does not exist.");
@@ -145,23 +139,18 @@ public class Parser {
 
             switch (tokenType) {
                 case INT_KEYWORD:
-                    varDeclarationStart = true;
                     stmts.add(new Stmt.Int(name, initializer));
                     break;
                 case CHAR_KEYWORD:
-                    varDeclarationStart = true;
                     stmts.add(new Stmt.Char(name, initializer));
                     break;
                 case BOOL_KEYWORD:
-                    varDeclarationStart = true;
                     stmts.add(new Stmt.Bool(name, initializer));
                     break;
                 case FLOAT_KEYWORD:
-                    varDeclarationStart = true;
                     stmts.add(new Stmt.Float(name, initializer));
                     break;
                 case STRING_KEYWORD:
-                    varDeclarationStart = true;
                     stmts.add(new Stmt.String(name, initializer));
                     break;
                 default:
@@ -175,21 +164,32 @@ public class Parser {
     }    
 
     private code.Stmt statement() {
-        if (match(IF)) return ifStatement();
+        if (match(IF)) {
+            executableCodeStart = true;
+            return ifStatement();
+        }
+        
+        
 
         if (match(DISPLAY)) {
             if(match(COLON)){
+                executableCodeStart = true;
                 return displayStatement();
             }
         }
 
         if (match(SCAN)) {
             if(match(COLON)){
+                executableCodeStart = true;
                 return scanStatement();
             }
         }
 
-        if (match(WHILE)) return whileStatement();
+        if (match(WHILE)) {
+            executableCodeStart = true;
+            return whileStatement();
+        }
+            
 
         if (match(BEGIN)) {
             if(match(CODE)){
@@ -206,6 +206,11 @@ public class Parser {
 
         if (match(END)) {
             if(match(CODE)){
+                /*  executableCodeStart marked as false to generate the correct error
+                    when there is code OUTSIDE of BEGIN CODE/END CODE
+                    update:...this doesnt work. will figure it out later
+                */
+                executableCodeStart = false;
 
                 if(ENDflag) {
                     Code.error(Scanner.getLine(), "Cannot allow multiple BEGIN CODE and END CODE declarations");
