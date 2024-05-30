@@ -12,12 +12,20 @@ public class Parser {
     private final List<Token> tokens;
     private boolean executableCodeStart = false;
     private int current = 0;
-    private boolean BEGINflag = false;
-    private boolean ENDflag = false;
+    // private boolean BEGINflag = false;
+    // private boolean ENDflag = false;
     
 
     Parser(List<Token> tokens) {
         this.tokens = tokens;
+        //printTokens();
+        testBeginEnd();
+    }
+
+    public void printTokens() {
+        for (Token i : tokens) {
+            System.out.println(i);
+        }
     }
 
     List<code.Stmt> parse() {
@@ -29,6 +37,47 @@ public class Parser {
         return statements;
     }
 
+    // testing for begin and end code
+    private void testBeginEnd(){
+        int size = tokens.size();
+        Token test0 = tokens.get(0);
+        int flag = -1;
+        TokenType begin1 = BEGIN;
+        TokenType code1 = CODE;
+        TokenType end1 =END;
+
+        //starts with begin
+        if(test0.type==code1){
+            //nothing, error already throws in expression
+        } else if(test0.type!=begin1){
+            Code.error(0, "CODE must start with 'BEGIN'");
+        }
+
+
+        //counting begins and ends
+        int countEnd = 0;
+        int count = 0;
+        for (Token i : tokens) {
+            if(count>=1 && i.type==begin1){
+                Code.error(0, "Cannot have multiple instances of 'BEGIN'");
+            } if(i.type==end1){
+                countEnd++;
+                if(countEnd>=2){
+                    Code.error(size-2, "Cannot have multiple instances of 'END'");
+                    //System.out.println(countEnd);
+                    break;
+                }
+            } count++; 
+        }
+    
+        //code out of bounds
+        //Token last = tokens.get(size-1); //null EOF
+        Token scnlast = tokens.get(size-2); // end code section
+        //System.out.println(scnlast.toString());
+        if(scnlast.type!=code1 && scnlast.type!=end1){
+            Code.error(size-1, "Text out of scope");
+        } 
+    }
 
     private Expr expression() {
         return assignment();
@@ -224,15 +273,16 @@ public class Parser {
         }
             
 
+    
         if (match(BEGIN)) {
             if(match(CODE)){
 
-                if(BEGINflag) {
-                    Code.error(Scanner.getLine(), "Cannot allow multiple BEGIN CODE and END CODE declarations");
-                    return null;
-                }
+                // if(BEGINflag) {
+                //     Code.error(Scanner.getLine(), "Cannot allow multiple BEGIN CODE and END CODE declarations");
+                //     return null;
+                // }
 
-                BEGINflag = true;
+                // BEGINflag = true;
                 return new code.Stmt.Block(block());
             }
         }
@@ -245,10 +295,10 @@ public class Parser {
                 */
                 executableCodeStart = false;
 
-                if(ENDflag) {
-                    Code.error(Scanner.getLine(), "Cannot allow multiple BEGIN CODE and END CODE declarations");
-                    return null;
-                }
+                // if(ENDflag) {
+                //     Code.error(Scanner.getLine(), "Cannot allow multiple BEGIN CODE and END CODE declarations");
+                //     return null;
+                // }
                 return null;
             }
         }
