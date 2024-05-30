@@ -275,7 +275,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof Integer)){
-                throw new RuntimeError(stmt.name, "Instance must be an integer.");
+                throw new RuntimeError(stmt.name, "Instance must be of type INT");
             }
         }
         String dataType = "INT";
@@ -290,7 +290,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof Character)){
-                throw new RuntimeError(stmt.name, "Instance must be a character.");
+                throw new RuntimeError(stmt.name, "Instance must be of type CHAR");
             }
         }
 
@@ -306,7 +306,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof Double)){
-                throw new RuntimeError(stmt.name, "Instance must be a float.");
+                throw new RuntimeError(stmt.name, "Instance must be of type FLOAT");
             }
         }
         String dataType = "FLOAT";
@@ -321,8 +321,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof Boolean)){
-                throw new RuntimeError(stmt.name, "Instance must be a boolean.");
+                throw new RuntimeError(stmt.name, "Instance must be of type BOOL");
             }
+            // if (!stmt.name.lexeme.equals("\"TRUE\"") || !stmt.name.lexeme.equals("\"FALSE\"")) {
+            //     throw new RuntimeError(stmt.name, "Instance must be of type BOOL");
+            // }
+            // System.out.println("the bool value is: " + value);
         }
 
         String dataType = "BOOL";
@@ -337,7 +341,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof String)){
-                throw new RuntimeError(stmt.name, "Instance must be a string.");
+                throw new RuntimeError(stmt.name, "Instance must be of type STRING");
             }
         }
         String dataType = "STRING";
