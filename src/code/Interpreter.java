@@ -280,7 +280,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
         String dataType = "INT";
 
-        environment.define(stmt.name.lexeme, value,dataType);
+        environment.define(stmt.name, value,dataType);
         return null;
     }
 
@@ -296,7 +296,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
         String dataType = "CHAR";
 
-        environment.define(stmt.name.lexeme, value,dataType);
+        environment.define(stmt.name, value,dataType);
         return null;
     }
 
@@ -311,7 +311,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
         String dataType = "FLOAT";
 
-        environment.define(stmt.name.lexeme, value, dataType);
+        environment.define(stmt.name, value, dataType);
         return null;
     }
 
@@ -327,7 +327,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
         String dataType = "BOOL";
 
-        environment.define(stmt.name.lexeme, value,dataType);
+        environment.define(stmt.name, value,dataType);
         return null;
     }
 
@@ -342,7 +342,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
         String dataType = "STRING";
 
-        environment.define(stmt.name.lexeme, value,dataType);
+        environment.define(stmt.name, value,dataType);
         return null;
     }
 

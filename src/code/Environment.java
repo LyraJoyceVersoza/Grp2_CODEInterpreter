@@ -73,9 +73,12 @@ class Environment {
         }
     }
 
-    void define(String varName, Object value, String dataType) {
-        values.put(varName, value);
-        dataTypes.put(varName, dataType);
+    void define(Token varName, Object value, String dataType) {
+        if (values.containsKey(varName.lexeme)) {
+            throw new RuntimeError(varName, "Runtime Error: Variable " + varName.lexeme + " is already defined");
+        }
+        values.put(varName.lexeme, value);
+        dataTypes.put(varName.lexeme, dataType);
     }
 
 }
