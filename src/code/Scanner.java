@@ -40,6 +40,7 @@ class Scanner {
         charas.add('"');
         charas.add('\'');
         charas.add('$');
+        charas.add(';');
     }
 
     //reserved words
@@ -47,18 +48,19 @@ class Scanner {
         keywords = new HashMap<>();
         keywords.put("BEGIN", BEGIN);
         keywords.put("END", END);
-        keywords.put("CODE",     CODE);
-        keywords.put("IF",     IF);
-        keywords.put("WHILE",  WHILE);
-        keywords.put("DISPLAY",  DISPLAY);
-        keywords.put("SCAN",  SCAN);
-        keywords.put("ELSE",   ELSE);
+        keywords.put("CODE", CODE);
+        keywords.put("IF", IF);
+        keywords.put("WHILE", WHILE);
+        keywords.put("FOR", FOR);
+        keywords.put("DISPLAY", DISPLAY);
+        keywords.put("SCAN", SCAN);
+        keywords.put("ELSE", ELSE);
         keywords.put("NIL", NIL);
-        keywords.put("TRUE",   TRUE);
-        keywords.put("FALSE",  FALSE);
-        keywords.put("AND",    AND);
-        keywords.put("OR",     OR);
-        keywords.put("NOT",     NOT);
+        keywords.put("TRUE", TRUE);
+        keywords.put("FALSE", FALSE);
+        keywords.put("AND", AND);
+        keywords.put("OR", OR);
+        keywords.put("NOT", NOT);
         keywords.put("VAR", VAR);
         keywords.put("INT",  INT_KEYWORD);
         keywords.put("CHAR",  CHAR_KEYWORD);
@@ -95,6 +97,7 @@ class Scanner {
             case '&': addToken(CONCAT); break;
             case '*': addToken(STAR); break;
             case '%': addToken(MODULO); break;
+            case ';': addToken(SEMICOLON); break;
             case '[':
                 escapechar();
                 break;

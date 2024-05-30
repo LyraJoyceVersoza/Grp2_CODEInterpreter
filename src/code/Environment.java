@@ -36,6 +36,13 @@ class Environment {
 
     void assign(Token name, Object value) {
         if (values.containsKey(name.lexeme)) {
+
+            String varDataType = dataTypes.get(name.lexeme);
+
+            if (!isValidType(value, varDataType)) {
+                throw new RuntimeError(name, "Input must be of type " + dataTypes.get(name.lexeme));
+            }
+
             values.put(name.lexeme, value);
             return;
         }
@@ -46,6 +53,24 @@ class Environment {
         }
 
         throw new RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
+    }
+
+    private boolean isValidType(Object value, String dataType) {
+        // Check if the value's type matches the expected data type
+        switch (dataType) {
+            case "INT":
+                return value instanceof Integer;
+            case "FLOAT":
+                return value instanceof Double;
+            case "CHAR":
+                return value instanceof Character;
+            case "BOOL":
+                return value instanceof Boolean;
+            case "STRING":
+                return value instanceof String;
+            default:
+                return false;
+        }
     }
 
     void define(String varName, Object value, String dataType) {

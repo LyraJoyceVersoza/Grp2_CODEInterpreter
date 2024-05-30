@@ -1,6 +1,7 @@
 package code;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static code.TokenType.*;
@@ -86,6 +87,33 @@ public class Parser {
         return stmts;
     }
 
+    private Stmt singleVarDeclaration(String datatype){
+        Token name = consume(IDENTIFIER, "Expect variable name.");
+
+        Expr initializer = null;
+        if (match(EQUAL)) {
+            initializer = expression();
+        }
+
+        switch(datatype){
+            case "INT":
+                return new Stmt.Int(name, initializer);
+            case "CHAR":
+                return new Stmt.Char(name, initializer);
+            case "BOOL":
+                return new Stmt.Bool(name, initializer);
+            case "FLOAT":
+                return new Stmt.Float(name, initializer);
+            case "STRING":
+                return new Stmt.String(name, initializer);
+            default:
+                break;
+
+        }
+
+        return null;
+    }
+
     private List<Stmt> varDeclaration(String datatype) { 
         List<Token> names = new ArrayList<>();
         List<Expr> initializers = new ArrayList<>();
@@ -167,9 +195,7 @@ public class Parser {
         if (match(IF)) {
             executableCodeStart = true;
             return ifStatement();
-        }
-        
-        
+        }      
 
         if (match(DISPLAY)) {
             if (!match(COLON)) {
@@ -194,6 +220,11 @@ public class Parser {
         if (match(WHILE)) {
             executableCodeStart = true;
             return whileStatement();
+        }
+
+        if (match(FOR)) {
+            executableCodeStart = true;
+            return forStatement();
         }
             
 
@@ -284,12 +315,87 @@ public class Parser {
         consume(BEGIN, "Expect 'BEGIN WHILE' after ')'.");
         consume(WHILE, "Expect 'WHILE' after 'BEGIN'.");
 
-        code.Stmt body = statement();
+        List<Stmt> body = new ArrayList<>();
+        while (!check(END) || !checkNext(WHILE)) {
+            body.addAll(declaration());
+        }
 
         consume(END, "Expect 'END WHILE' after statement body.");
         consume(WHILE, "Expect 'END WHILE' after statement body.");
 
-        return new code.Stmt.While(condition, body);
+        return new Stmt.While(condition, new Stmt.Block(body));
+    }
+
+    private Stmt forStatement(){
+
+        consume(LEFT_PAREN, "Expect '(' after 'for'.");
+        Stmt initializer;
+
+        if (match(SEMICOLON)) {
+            //seeing semicolon after ( means initializer has been omitted
+            initializer = null;
+        } else if (match(INT_KEYWORD)) {
+            initializer = singleVarDeclaration("INT");
+        } else if (match(CHAR_KEYWORD)) {
+            initializer = singleVarDeclaration("CHAR");
+        } else if (match(BOOL_KEYWORD)) {
+            initializer = singleVarDeclaration("BOOL");
+        } else if (match(FLOAT_KEYWORD)) {
+            initializer = singleVarDeclaration("FLOAT");
+        } else if (match(STRING_KEYWORD)) {
+            initializer = singleVarDeclaration("STRING");
+        } else {
+            initializer = expressionStatement();
+        }
+
+        consume(SEMICOLON, "Expect ';' after initializer.");
+
+        Expr condition = null;
+        if (!check(SEMICOLON)) {
+            condition = expression();
+        }
+        consume(SEMICOLON, "Expect ';' after loop condition.");
+
+        Expr increment = null;
+        if (!check(RIGHT_PAREN)) {
+            increment = expression();
+        }
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        consume(BEGIN, "Expect 'BEGIN FOR' after ')'.");
+        consume(FOR, "Expect 'FOR' after 'BEGIN'.");          
+
+        List<Stmt> body = new ArrayList<>();
+        while (!check(END) || !checkNext(FOR)) {
+            body.addAll(declaration());
+        }
+
+        if (increment != null) {
+            body.add(new Stmt.Expression(increment));
+        }
+    
+        Stmt whileBody = new Stmt.Block(body);
+        if (condition == null) {
+            condition = new Expr.Literal(true);
+        }
+    
+        Stmt whileStmt = new Stmt.While(condition, whileBody);
+    
+        if (initializer != null) {
+            List<Stmt> fullBody = new ArrayList<>();
+            fullBody.add(initializer);
+            fullBody.add(whileStmt);
+
+            consume(END, "Expect 'END FOR' after statement body.");
+            consume(FOR, "Expect 'FOR' after statement body.");
+
+            return new Stmt.Block(fullBody);
+        }
+
+        consume(END, "Expect 'END FOR' after statement body.");
+        consume(FOR, "Expect 'FOR' after statement body.");
+    
+        return whileStmt;
     }
 
     private code.Stmt expressionStatement() {
