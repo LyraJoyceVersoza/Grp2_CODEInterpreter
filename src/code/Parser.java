@@ -202,7 +202,7 @@ public class Parser {
                 executableCodeStart = true;
                 return displayStatement();
             }
-            Code.error(peek(), "Expect ':' after 'DISPLAY'.");
+            Code.error(previous(), "Expect ':' after 'DISPLAY'.");
         }
 
         if (match(SCAN)) {
@@ -210,7 +210,7 @@ public class Parser {
                 executableCodeStart = true;
                 return scanStatement();
             }
-            Code.error(peek(), "Expect ':' after 'SCAN'.");            
+            Code.error(previous(), "Expect ':' after 'SCAN'.");            
         }
 
         if (match(WHILE)) {
