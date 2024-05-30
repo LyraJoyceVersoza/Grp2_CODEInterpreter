@@ -198,23 +198,19 @@ public class Parser {
         }      
 
         if (match(DISPLAY)) {
-            if (!match(COLON)) {
-                Code.error(peek(), "Expect ':' after 'DISPLAY'.");
-            }
             if(match(COLON)){
                 executableCodeStart = true;
                 return displayStatement();
             }
+            Code.error(peek(), "Expect ':' after 'DISPLAY'.");
         }
 
         if (match(SCAN)) {
-            if (!match(COLON)) {
-                Code.error(peek(), "Expect ':' after 'SCAN'.");
-            }
             if(match(COLON)){
                 executableCodeStart = true;
                 return scanStatement();
             }
+            Code.error(peek(), "Expect ':' after 'SCAN'.");            
         }
 
         if (match(WHILE)) {
