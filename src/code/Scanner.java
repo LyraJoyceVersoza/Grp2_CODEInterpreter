@@ -56,8 +56,8 @@ class Scanner {
         keywords.put("SCAN", SCAN);
         keywords.put("ELSE", ELSE);
         keywords.put("NIL", NIL);
-        keywords.put("TRUE", TRUE);
-        keywords.put("FALSE", FALSE);
+        keywords.put("\"TRUE\"", TRUE);
+        keywords.put("\"FALSE\"", FALSE);
         keywords.put("AND", AND);
         keywords.put("OR", OR);
         keywords.put("NOT", NOT);

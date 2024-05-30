@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.sun.source.doctree.SystemPropertyTree;
+
 import static code.TokenType.*;
 
 public class Parser {
@@ -173,6 +175,7 @@ public class Parser {
                     stmts.add(new Stmt.Char(name, initializer));
                     break;
                 case BOOL_KEYWORD:
+                    // System.out.print("bool initializer is: " + initializer);
                     stmts.add(new Stmt.Bool(name, initializer));
                     break;
                 case FLOAT_KEYWORD:
@@ -282,7 +285,6 @@ public class Parser {
         return new code.Stmt.If(condition, thenBranch, elseBranch);
     }
 
-    //might be useful for later, but highly likely to be removed
     private boolean checkNext(TokenType type) {
         if (isAtEnd()) return false;
         return tokens.get(current + 1).type == type;
