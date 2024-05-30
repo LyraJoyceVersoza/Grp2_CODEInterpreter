@@ -49,6 +49,10 @@ public class Parser {
     }
 
     private List<Stmt> declaration() {
+        // if(!BEGINflag){
+        //     Code.error(null, "Cannot declare executables outside of BEGIN CODE and END CODE");
+        // }
+
         List<Stmt> stmts = new ArrayList<>();    
 
         try {
@@ -74,15 +78,9 @@ public class Parser {
             }
 
             stmts.add(statement());
-
-            // if (match(INT_KEYWORD)) return varDeclaration("INT");
-            // if (match(FLOAT_KEYWORD)) return varDeclaration("FLOAT");
-            // if (match(CHAR_KEYWORD)) return varDeclaration("CHAR");
-            // if (match(BOOL_KEYWORD)) return varDeclaration("BOOL");
-            // if (match(STRING_KEYWORD)) return varDeclaration("STRING");            
+          
         } catch (ParseError error) {
             synchronize();
-            // return null;
         }
         
 
@@ -175,7 +173,6 @@ public class Parser {
                     stmts.add(new Stmt.Char(name, initializer));
                     break;
                 case BOOL_KEYWORD:
-                    // System.out.print("bool initializer is: " + initializer);
                     stmts.add(new Stmt.Bool(name, initializer));
                     break;
                 case FLOAT_KEYWORD:
@@ -533,35 +530,9 @@ public class Parser {
             } else {
                 return new Expr.Literal(previousObjToken.getLiteral());
             }
-            // return new Expr.Literal(previous().literal);
         }
 
-        
-
-//        if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)) {
-//            Token nameToken = previous(); // Capture the datatype token
-//            Token datatypeToken;
-//
-//            if (nameToken.type.equals(INT_KEYWORD)){
-//                datatypeToken = consume(INT_KEYWORD, "Expect datatype after variable name."); // Consume the datatype token
-//            }
-//
-//            return new Expr.Variable(datatypeToken, nameToken); // Create a Variable instance with both tokens
-//        }
-
-//        if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, CHAR_KEYWORD)) {
-////            System.out.println("datatype keyword found");
-////            Token dataType = previous();
-//            Token dataType = tokens.get(current-2);
-//            if (match(IDENTIFIER)) {
-//                Token varName = previous();
-//                return new Expr.Variable(dataType, varName);
-//            }
-//        }
-
         if (match(IDENTIFIER)) {
-//            current+=2;
-//            Token varName = previous();
             return new Expr.Variable(previous());
         }
 
@@ -623,13 +594,6 @@ public class Parser {
         advance();
 
         while (!isAtEnd()) {
-//            if (previous().type == SEMICOLON) return;
-//            if (
-//                previous().type == CODE ||
-//                previous().type == IF ||
-//                previous().type == WHILE
-//            ) return; --> to be excluded
-
             switch (peek().type) {
                 case BEGIN:
                 case INT_KEYWORD:
