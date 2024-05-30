@@ -293,7 +293,50 @@ public class Parser {
 
     private code.Stmt displayStatement() {
         Expr value = expression();
+
+        // Expr value = parseExpressionWithAmpersand();
+
+        // // Check if there are more expressions to concatenate
+        // while (match(CONCAT)) {
+        //     // Ensure that CONCAT is followed by a valid expression
+        //     if (!check(TokenType.IDENTIFIER) && !check(TokenType.STRING) && !check(TokenType.NEXT_LINE) && !check(TokenType.CONCAT)) {
+        //         Code.error(previous(), "Expected valid expression after CONCAT");
+        //         return null; // Return null to signify parsing failure
+        //     }
+
+        //     // Consume the CONCAT token
+        //     advance();
+
+        //     // Parse the next expression
+        //     Expr nextExpr = parseExpressionWithAmpersand();
+
+        //     // Concatenate the expressions using the '&' symbol
+        //     value = new Expr.Binary(value, previous(), nextExpr);
+        // }
+
+        // // Ensure that there are no dangling CONCAT tokens at the end
+        // if (match(TokenType.IDENTIFIER) || match(TokenType.STRING) || match(TokenType.NEXT_LINE) || match(TokenType.CONCAT)) {
+        //     Code.error(previous(), "Expressions must be separated by CONCAT");
+        //     return null; // Return null to signify parsing failure
+        // }
         return new Stmt.Display(value);
+    }
+
+    private Expr parseExpressionWithAmpersand() {
+        if (match(TokenType.CONCAT)) {
+            advance();
+            return new Expr.Literal("&"); // Represent '&' character as a special token
+        } else {
+            return parseExpressionWithNewLine(); // Use existing expression parsing logic
+        }
+    }
+    private Expr parseExpressionWithNewLine() {
+        if (match(TokenType.NEXT_LINE)) {
+            advance();
+            return new Expr.Literal("\n"); // Represent newline with a special token
+        } else {
+            return expression();
+        }
     }
 
     private code.Stmt scanStatement() {
@@ -514,28 +557,35 @@ public class Parser {
         }
 
         if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING_LITERAL, ESCAPE)) {
-            Token previousObjToken = previous();
+            // Token previousObjToken = previous();
 
             if (check(NEXT_LINE) && !isAtEnd()) {
                 //the newline token $
-                // System.out.print("In primary, recognized NEXT_LINE");
                 advance();
 
                 //if the newline $ is in the middle of a string, 
                 //it will be treated as a binary operation for 2 strings
                 if (!isAtEnd()) {
                     Token nextToken = peek();
-                    return new Expr.Binary(new Expr.Literal(previousObjToken.getLiteral()),
+                    return new Expr.Binary(new Expr.Literal(previous().getLiteral()),
                             new Token(NEXT_LINE, null, "\n", -1), primary());
                 } else {
                     //if the newline $ is at the end of a string
-                    System.out.print(previousObjToken.getLiteral());
+                    // System.out.print(previous().getLiteral());
                     return new Expr.Literal(new Token(NEXT_LINE, null, null, -1));
                 }
             } else {
-                return new Expr.Literal(previousObjToken.getLiteral());
+                return new Expr.Literal(previous().getLiteral());
             }
         }        
+
+        if (match(NEXT_LINE)) {
+            return new Expr.Literal("\n");
+        }
+
+        if(previous().type.equals(NEXT_LINE)){
+            return new Expr.Literal("");
+        }
 
         if (match(IDENTIFIER)) {
             return new Expr.Variable(previous());
