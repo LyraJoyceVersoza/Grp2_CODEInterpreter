@@ -1,10 +1,7 @@
 package code;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import com.sun.source.doctree.SystemPropertyTree;
 
 import static code.TokenType.*;
 
@@ -14,6 +11,7 @@ public class Parser {
     private final List<Token> tokens;
     private boolean executableCodeStart = false;
     private int current = 0;
+    //for handling multiple BEGIN CODE END CODE errors
     private boolean BEGINflag = false;
     private boolean ENDflag = false;
     
@@ -49,10 +47,6 @@ public class Parser {
     }
 
     private List<Stmt> declaration() {
-        // if(!BEGINflag){
-        //     Code.error(null, "Cannot declare executables outside of BEGIN CODE and END CODE");
-        // }
-
         List<Stmt> stmts = new ArrayList<>();    
 
         try {
@@ -186,7 +180,6 @@ public class Parser {
                     break;
             }
         }
-        // System.out.println(stmts);
         return stmts;
         
     }    
@@ -239,12 +232,6 @@ public class Parser {
 
         if (match(END)) {
             if(match(CODE)){
-                /*  executableCodeStart marked as false to generate the correct error
-                    when there is code OUTSIDE of BEGIN CODE/END CODE
-                    update:...this doesnt work. will figure it out later
-                */
-                executableCodeStart = false;
-
                 if(ENDflag) {
                     Code.error(Scanner.getLine(), "Cannot allow multiple BEGIN CODE and END CODE declarations");
                     return null;
@@ -293,32 +280,6 @@ public class Parser {
 
     private code.Stmt displayStatement() {
         Expr value = expression();
-
-        // Expr value = parseExpressionWithAmpersand();
-
-        // // Check if there are more expressions to concatenate
-        // while (match(CONCAT)) {
-        //     // Ensure that CONCAT is followed by a valid expression
-        //     if (!check(TokenType.IDENTIFIER) && !check(TokenType.STRING) && !check(TokenType.NEXT_LINE) && !check(TokenType.CONCAT)) {
-        //         Code.error(previous(), "Expected valid expression after CONCAT");
-        //         return null; // Return null to signify parsing failure
-        //     }
-
-        //     // Consume the CONCAT token
-        //     advance();
-
-        //     // Parse the next expression
-        //     Expr nextExpr = parseExpressionWithAmpersand();
-
-        //     // Concatenate the expressions using the '&' symbol
-        //     value = new Expr.Binary(value, previous(), nextExpr);
-        // }
-
-        // // Ensure that there are no dangling CONCAT tokens at the end
-        // if (match(TokenType.IDENTIFIER) || match(TokenType.STRING) || match(TokenType.NEXT_LINE) || match(TokenType.CONCAT)) {
-        //     Code.error(previous(), "Expressions must be separated by CONCAT");
-        //     return null; // Return null to signify parsing failure
-        // }
         return new Stmt.Display(value);
     }
 
@@ -557,7 +518,6 @@ public class Parser {
         }
 
         if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING_LITERAL, ESCAPE)) {
-            // Token previousObjToken = previous();
 
             if (check(NEXT_LINE) && !isAtEnd()) {
                 //the newline token $
@@ -571,7 +531,6 @@ public class Parser {
                             new Token(NEXT_LINE, null, "\n", -1), primary());
                 } else {
                     //if the newline $ is at the end of a string
-                    // System.out.print(previous().getLiteral());
                     return new Expr.Literal(new Token(NEXT_LINE, null, null, -1));
                 }
             } else {
