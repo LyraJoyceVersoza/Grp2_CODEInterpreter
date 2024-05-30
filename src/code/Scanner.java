@@ -127,7 +127,9 @@ class Scanner {
                 break;
 
             case '$': //next line
+                // addToken(NEXT_LINE, '\n');
                 addToken(NEXT_LINE, '\n');
+                // System.out.print("I see u next_line");
                 line++;
                 break;
 

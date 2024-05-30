@@ -270,13 +270,17 @@ public class Parser {
 
         code.Stmt elseBranch = null;
         if (match(ELSE)) {
-            consume(BEGIN, "Expect 'BEGIN IF' after 'ELSE'.");
-            consume(IF, "Expect 'BEGIN IF' after 'ELSE'.");
+            if (match(IF)) {
+                elseBranch = ifStatement();
+            } else {
+                consume(BEGIN, "Expect 'BEGIN IF' after 'ELSE'.");
+                consume(IF, "Expect 'BEGIN IF' after 'ELSE'.");
 
-            elseBranch = statement();
+                elseBranch = statement();
 
-            consume(END, "Expect 'END IF' after the statement body.");
-            consume(IF, "Expect 'END IF' after the statement body.");
+                consume(END, "Expect 'END IF' after the statement body.");
+                consume(IF, "Expect 'END IF' after the statement body.");
+            }            
         }
 
         return new code.Stmt.If(condition, thenBranch, elseBranch);
@@ -514,6 +518,7 @@ public class Parser {
 
             if (check(NEXT_LINE) && !isAtEnd()) {
                 //the newline token $
+                // System.out.print("In primary, recognized NEXT_LINE");
                 advance();
 
                 //if the newline $ is in the middle of a string, 
@@ -530,7 +535,7 @@ public class Parser {
             } else {
                 return new Expr.Literal(previousObjToken.getLiteral());
             }
-        }
+        }        
 
         if (match(IDENTIFIER)) {
             return new Expr.Variable(previous());
