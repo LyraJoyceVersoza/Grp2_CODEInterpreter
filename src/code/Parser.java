@@ -1,7 +1,6 @@
 package code;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static code.TokenType.*;
@@ -121,15 +120,9 @@ public class Parser {
             }
 
             stmts.add(statement());
-
-            // if (match(INT_KEYWORD)) return varDeclaration("INT");
-            // if (match(FLOAT_KEYWORD)) return varDeclaration("FLOAT");
-            // if (match(CHAR_KEYWORD)) return varDeclaration("CHAR");
-            // if (match(BOOL_KEYWORD)) return varDeclaration("BOOL");
-            // if (match(STRING_KEYWORD)) return varDeclaration("STRING");            
+          
         } catch (ParseError error) {
             synchronize();
-            // return null;
         }
         
 
@@ -235,7 +228,6 @@ public class Parser {
                     break;
             }
         }
-        // System.out.println(stmts);
         return stmts;
         
     }    
@@ -251,7 +243,7 @@ public class Parser {
                 executableCodeStart = true;
                 return displayStatement();
             }
-            Code.error(peek(), "Expect ':' after 'DISPLAY'.");
+            Code.error(previous(), "Expect ':' after 'DISPLAY'.");
         }
 
         if (match(SCAN)) {
@@ -259,7 +251,7 @@ public class Parser {
                 executableCodeStart = true;
                 return scanStatement();
             }
-            Code.error(peek(), "Expect ':' after 'SCAN'.");            
+            Code.error(previous(), "Expect ':' after 'SCAN'.");            
         }
 
         if (match(WHILE)) {
@@ -320,19 +312,22 @@ public class Parser {
 
         code.Stmt elseBranch = null;
         if (match(ELSE)) {
-            consume(BEGIN, "Expect 'BEGIN IF' after 'ELSE'.");
-            consume(IF, "Expect 'BEGIN IF' after 'ELSE'.");
+            if (match(IF)) {
+                elseBranch = ifStatement();
+            } else {
+                consume(BEGIN, "Expect 'BEGIN IF' after 'ELSE'.");
+                consume(IF, "Expect 'BEGIN IF' after 'ELSE'.");
 
-            elseBranch = statement();
+                elseBranch = statement();
 
-            consume(END, "Expect 'END IF' after the statement body.");
-            consume(IF, "Expect 'END IF' after the statement body.");
+                consume(END, "Expect 'END IF' after the statement body.");
+                consume(IF, "Expect 'END IF' after the statement body.");
+            }            
         }
 
         return new code.Stmt.If(condition, thenBranch, elseBranch);
     }
 
-    //might be useful for later, but highly likely to be removed
     private boolean checkNext(TokenType type) {
         if (isAtEnd()) return false;
         return tokens.get(current + 1).type == type;
@@ -341,6 +336,23 @@ public class Parser {
     private code.Stmt displayStatement() {
         Expr value = expression();
         return new Stmt.Display(value);
+    }
+
+    private Expr parseExpressionWithAmpersand() {
+        if (match(TokenType.CONCAT)) {
+            advance();
+            return new Expr.Literal("&"); // Represent '&' character as a special token
+        } else {
+            return parseExpressionWithNewLine(); // Use existing expression parsing logic
+        }
+    }
+    private Expr parseExpressionWithNewLine() {
+        if (match(TokenType.NEXT_LINE)) {
+            advance();
+            return new Expr.Literal("\n"); // Represent newline with a special token
+        } else {
+            return expression();
+        }
     }
 
     private code.Stmt scanStatement() {
@@ -561,7 +573,6 @@ public class Parser {
         }
 
         if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING_LITERAL, ESCAPE)) {
-            Token previousObjToken = previous();
 
             if (check(NEXT_LINE) && !isAtEnd()) {
                 //the newline token $
@@ -571,45 +582,26 @@ public class Parser {
                 //it will be treated as a binary operation for 2 strings
                 if (!isAtEnd()) {
                     Token nextToken = peek();
-                    return new Expr.Binary(new Expr.Literal(previousObjToken.getLiteral()),
+                    return new Expr.Binary(new Expr.Literal(previous().getLiteral()),
                             new Token(NEXT_LINE, null, "\n", -1), primary());
                 } else {
                     //if the newline $ is at the end of a string
-                    System.out.print(previousObjToken.getLiteral());
                     return new Expr.Literal(new Token(NEXT_LINE, null, null, -1));
                 }
             } else {
-                return new Expr.Literal(previousObjToken.getLiteral());
+                return new Expr.Literal(previous().getLiteral());
             }
-            // return new Expr.Literal(previous().literal);
+        }        
+
+        if (match(NEXT_LINE)) {
+            return new Expr.Literal("\n");
         }
 
-        
-
-//        if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)) {
-//            Token nameToken = previous(); // Capture the datatype token
-//            Token datatypeToken;
-//
-//            if (nameToken.type.equals(INT_KEYWORD)){
-//                datatypeToken = consume(INT_KEYWORD, "Expect datatype after variable name."); // Consume the datatype token
-//            }
-//
-//            return new Expr.Variable(datatypeToken, nameToken); // Create a Variable instance with both tokens
-//        }
-
-//        if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, CHAR_KEYWORD)) {
-////            System.out.println("datatype keyword found");
-////            Token dataType = previous();
-//            Token dataType = tokens.get(current-2);
-//            if (match(IDENTIFIER)) {
-//                Token varName = previous();
-//                return new Expr.Variable(dataType, varName);
-//            }
-//        }
+        if(previous().type.equals(NEXT_LINE)){
+            return new Expr.Literal("");
+        }
 
         if (match(IDENTIFIER)) {
-//            current+=2;
-//            Token varName = previous();
             return new Expr.Variable(previous());
         }
 
@@ -671,13 +663,6 @@ public class Parser {
         advance();
 
         while (!isAtEnd()) {
-//            if (previous().type == SEMICOLON) return;
-//            if (
-//                previous().type == CODE ||
-//                previous().type == IF ||
-//                previous().type == WHILE
-//            ) return; --> to be excluded
-
             switch (peek().type) {
                 case BEGIN:
                 case INT_KEYWORD:

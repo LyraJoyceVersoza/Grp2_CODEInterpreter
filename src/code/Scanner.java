@@ -56,8 +56,8 @@ class Scanner {
         keywords.put("SCAN", SCAN);
         keywords.put("ELSE", ELSE);
         keywords.put("NIL", NIL);
-        keywords.put("TRUE", TRUE);
-        keywords.put("FALSE", FALSE);
+        keywords.put("\"TRUE\"", TRUE);
+        keywords.put("\"FALSE\"", FALSE);
         keywords.put("AND", AND);
         keywords.put("OR", OR);
         keywords.put("NOT", NOT);
@@ -124,12 +124,10 @@ class Scanner {
                 break;
             case '\r':
             case '\t':
-//            case'[]': //unsure how to implement this escape thing
-                // Ignore whitespace.
                 break;
 
             case '$': //next line
-                addToken(NEXT_LINE, '\n');
+                addToken(NEXT_LINE);
                 line++;
                 break;
 
@@ -183,7 +181,6 @@ class Scanner {
         Code.error(line, "Invalid Escape Character.");
     }
 
-    //-----------------------------DATA TYPE [START] ---------------
     private void identifier() {
         while (isAlphaNumeric(peek())) advance();
 
@@ -206,70 +203,8 @@ class Scanner {
         } else {
             addToken(INT_LITERAL, Integer.parseInt(source.substring(start, current)));
         }
-
-//        addToken(NUMBER,
-//                Double.parseDouble(source.substring(start, current)));
     }
 
-    //as of 4/4/2024 9:50 am, it properly tokenizes input as CHAR_LITERAL, but
-    //the error handling messages need fixing:
-    //for an input like 'a, a will be considered an identifier;
-    // this should have the error "Unterminated character" instead
-    //for an input like a',  it is expected that a will be tokenized as an identifier,
-    // and then it will generate the error "Unterminated character"
-    //"Invalid  character input" error should only appear when the input is 'aadff'
-    //in that case, it is a string and should be enclosed in double quotation marks
-
-
-    /*private void char_type(){
-//        while (peek() != '\'' && !isAtEnd()) {
-//            if(peekNext()!='\'') {
-//                Lox.error(line, "Invalid character input.");
-//                return;
-//            }
-//
-//            if (peek() == '\n') line++;
-//            advance();
-//        }
-//
-//        if (isAtEnd()) {
-//            Lox.error(line, "Unterminated character.");
-//            return;
-//        }
-//
-//        // The closing ".
-//        advance();
-//
-//        // Trim the surrounding quotes.
-//        String value = source.substring(start + 1, current-1);
-//        addToken(CHAR_LITERAL, value);
-
-        if(peekNext() != '\'') {
-            Lox.error(line, "Invalid character input.");
-            return;
-        }
-
-        // Consume the starting single quote
-        advance();
-
-        // Regular character handling
-        while (peek() != '\'' && !isAtEnd()) {
-            if (peek() == '\n') line++;
-            advance();
-        }
-
-        if (isAtEnd()) {
-            Lox.error(line, "Unterminated character.");
-            return;
-        }
-
-        // Consume the closing single quote
-        advance();
-
-        // Trim the surrounding quotes.
-        String value = source.substring(start + 1, current-1);
-        addToken(CHAR_LITERAL, value);
-    }*/
     private void char_type() {
         // Consume the starting single quote
         advance();
@@ -306,6 +241,7 @@ class Scanner {
         // Add the character literal token
         addToken(CHAR_LITERAL, value.charAt(0));
     }
+
     private void string() {
         // Regular string handling
         while (peek() != '"' && !isAtEnd()) {
@@ -340,7 +276,6 @@ class Scanner {
             addToken(STRING_LITERAL, value);
         }
     }
-    //-----------------------------DATA TYPE [END] ---------------
 
     private boolean match(char expected) {
         if (isAtEnd()) return false;

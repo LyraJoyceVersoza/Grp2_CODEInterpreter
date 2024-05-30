@@ -1,8 +1,5 @@
 package code;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Scanner;
 
@@ -77,15 +74,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (operand instanceof Integer || operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");
     }
-
-    // private void checkNumberOperands(Token operator,
-    //                                  Object left, Object right) {
-    //     if (left instanceof Double && right instanceof Double) return;
-    //     if (left instanceof Float && right instanceof Float) return;
-    //     if (left instanceof Integer && right instanceof Integer) return;
-
-    //     throw new RuntimeError(operator, "Operands must be numbers.");
-    // }
 
     private boolean isTruthy(Object object) {
         if (object == null) return false;
@@ -275,7 +263,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof Integer)){
-                throw new RuntimeError(stmt.name, "Instance must be an integer.");
+                throw new RuntimeError(stmt.name, "Instance must be of type INT");
             }
         }
         String dataType = "INT";
@@ -290,7 +278,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof Character)){
-                throw new RuntimeError(stmt.name, "Instance must be a character.");
+                throw new RuntimeError(stmt.name, "Instance must be of type CHAR");
             }
         }
 
@@ -306,7 +294,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof Double)){
-                throw new RuntimeError(stmt.name, "Instance must be a float.");
+                throw new RuntimeError(stmt.name, "Instance must be of type FLOAT");
             }
         }
         String dataType = "FLOAT";
@@ -321,7 +309,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof Boolean)){
-                throw new RuntimeError(stmt.name, "Instance must be a boolean.");
+                throw new RuntimeError(stmt.name, "Instance must be of type BOOL");
             }
         }
 
@@ -337,7 +325,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
             if(!(value instanceof String)){
-                throw new RuntimeError(stmt.name, "Instance must be a string.");
+                throw new RuntimeError(stmt.name, "Instance must be of type STRING");
             }
         }
         String dataType = "STRING";
@@ -384,37 +372,37 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                     return (stringify(left) + "\n" + stringify(right));
                 case CONCAT:
                     return stringify(left) + stringify(right);
-            case GREATER:                    
+                case GREATER:                    
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() > rightVal.intValue();
                     }
                 return leftVal.doubleValue() > rightVal.doubleValue();
-            case GREATER_EQUAL:
+                case GREATER_EQUAL:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() >= rightVal.intValue();
                     }
                     return leftVal.doubleValue() >= rightVal.doubleValue();
-            case LESS:
+                case LESS:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                     return leftVal.intValue() < rightVal.intValue();
                     }
                     return leftVal.doubleValue() < rightVal.doubleValue();
-            case LESS_EQUAL:
+                case LESS_EQUAL:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() <= rightVal.intValue();
                     }
                     return leftVal.doubleValue() <= rightVal.doubleValue();
-            case MINUS:
+                case MINUS:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() - rightVal.intValue();
                     }
                     return leftVal.doubleValue() - rightVal.doubleValue();
-            case PLUS:
+                case PLUS:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() + rightVal.intValue();
                     }
                     return leftVal.doubleValue() + rightVal.doubleValue();
-            case SLASH:
+                case SLASH:
                     if (rightVal.doubleValue() == 0) {
                         throw new RuntimeError(expr.operator, "Division by zero.");
                     }
@@ -422,7 +410,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                         return leftVal.intValue() / rightVal.intValue();
                     }
                     return leftVal.doubleValue() / rightVal.doubleValue();
-            case STAR:
+                case STAR:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() * rightVal.intValue();
                     }
