@@ -9,7 +9,6 @@ enum TokenType {
     NEXT_LINE,
 
     // One or two character tokens.
-    //    BANG, BANG_EQUAL, --> unused
     EQUAL_EQUAL, NOT_EQUAL, EQUAL,
     GREATER, GREATER_EQUAL,
     LESS, LESS_EQUAL,
@@ -21,14 +20,13 @@ enum TokenType {
     AND, OR, NOT,
 
     // Keywords.
-    // CLASS, FUN, FOR, PRINT, NIL, RETURN, SUPER, THIS, VAR //THESE ARE EXCLUDED
 
     BEGIN, END, CODE,
     VAR, NIL,
     IF, ELSE,
     TRUE, FALSE,
-    WHILE,
-    DISPLAY, COLON, SCAN,
+    WHILE, FOR,
+    DISPLAY, COLON, SCAN, SEMICOLON,
     INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD,STRING_KEYWORD,
 
     //DATATYPES
