@@ -1,8 +1,5 @@
 package code;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Scanner;
 
@@ -20,9 +17,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
     @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
-        // if(expr.value.equals("\n")) {
-        //     System.out.println();
-        // }
         return expr.value;
     }
 
@@ -80,15 +74,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (operand instanceof Integer || operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");
     }
-
-    // private void checkNumberOperands(Token operator,
-    //                                  Object left, Object right) {
-    //     if (left instanceof Double && right instanceof Double) return;
-    //     if (left instanceof Float && right instanceof Float) return;
-    //     if (left instanceof Integer && right instanceof Integer) return;
-
-    //     throw new RuntimeError(operator, "Operands must be numbers.");
-    // }
 
     private boolean isTruthy(Object object) {
         if (object == null) return false;
@@ -326,10 +311,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             if(!(value instanceof Boolean)){
                 throw new RuntimeError(stmt.name, "Instance must be of type BOOL");
             }
-            // if (!stmt.name.lexeme.equals("\"TRUE\"") || !stmt.name.lexeme.equals("\"FALSE\"")) {
-            //     throw new RuntimeError(stmt.name, "Instance must be of type BOOL");
-            // }
-            // System.out.println("the bool value is: " + value);
         }
 
         String dataType = "BOOL";
