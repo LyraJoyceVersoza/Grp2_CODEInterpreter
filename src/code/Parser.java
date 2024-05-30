@@ -199,7 +199,7 @@ public class Parser {
 
         if (match(DISPLAY)) {
             if (!match(COLON)) {
-                throw error(peek(), "Expect ':' after 'DISPLAY'.");
+                Code.error(peek(), "Expect ':' after 'DISPLAY'.");
             }
             if(match(COLON)){
                 executableCodeStart = true;
@@ -209,7 +209,7 @@ public class Parser {
 
         if (match(SCAN)) {
             if (!match(COLON)) {
-                throw error(peek(), "Expect ':' after 'SCAN'.");
+                Code.error(peek(), "Expect ':' after 'SCAN'.");
             }
             if(match(COLON)){
                 executableCodeStart = true;
