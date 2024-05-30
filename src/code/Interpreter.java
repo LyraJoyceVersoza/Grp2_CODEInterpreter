@@ -20,6 +20,9 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
     @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
+        // if(expr.value.equals("\n")) {
+        //     System.out.println();
+        // }
         return expr.value;
     }
 
@@ -388,37 +391,37 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                     return (stringify(left) + "\n" + stringify(right));
                 case CONCAT:
                     return stringify(left) + stringify(right);
-            case GREATER:                    
+                case GREATER:                    
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() > rightVal.intValue();
                     }
                 return leftVal.doubleValue() > rightVal.doubleValue();
-            case GREATER_EQUAL:
+                case GREATER_EQUAL:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() >= rightVal.intValue();
                     }
                     return leftVal.doubleValue() >= rightVal.doubleValue();
-            case LESS:
+                case LESS:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                     return leftVal.intValue() < rightVal.intValue();
                     }
                     return leftVal.doubleValue() < rightVal.doubleValue();
-            case LESS_EQUAL:
+                case LESS_EQUAL:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() <= rightVal.intValue();
                     }
                     return leftVal.doubleValue() <= rightVal.doubleValue();
-            case MINUS:
+                case MINUS:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() - rightVal.intValue();
                     }
                     return leftVal.doubleValue() - rightVal.doubleValue();
-            case PLUS:
+                case PLUS:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() + rightVal.intValue();
                     }
                     return leftVal.doubleValue() + rightVal.doubleValue();
-            case SLASH:
+                case SLASH:
                     if (rightVal.doubleValue() == 0) {
                         throw new RuntimeError(expr.operator, "Division by zero.");
                     }
@@ -426,7 +429,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                         return leftVal.intValue() / rightVal.intValue();
                     }
                     return leftVal.doubleValue() / rightVal.doubleValue();
-            case STAR:
+                case STAR:
                     if(leftVal instanceof Integer && rightVal instanceof Integer){
                         return leftVal.intValue() * rightVal.intValue();
                     }
