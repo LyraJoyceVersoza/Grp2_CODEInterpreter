@@ -288,10 +288,103 @@ public class Parser {
         return tokens.get(current + 1).type == type;
     }
 
-    private code.Stmt displayStatement() {
-        Expr value = expression();
+    private Stmt displayStatement() {
+        // Parse the first expression
+        Expr value = parseExpressionWithAmpersand();
+       
+        // Check if there are more expressions to concatenate
+        while (match(CONCAT)) {
+            // Ensure that CONCAT is followed by a valid expression
+            if (!check(TokenType.IDENTIFIER) && !check(TokenType.STRING) && !check(TokenType.NEXT_LINE) && !check(TokenType.CONCAT)) {
+                Code.error(previous(), "Expected valid expression after CONCAT");
+                return null; // Return null to signify parsing failure
+            }
+            
+            // Consume the CONCAT token
+            advance();
+            
+            // Parse the next expression
+            Expr nextExpr = parseExpressionWithAmpersand();
+            
+            // Concatenate the expressions using the '&' symbol
+            value = new Expr.Binary(value, previous(), nextExpr);
+        }
+        
+        // Ensure that there are no dangling CONCAT tokens at the end
+        if (match(TokenType.IDENTIFIER) || match(TokenType.STRING) || match(TokenType.NEXT_LINE) || match(TokenType.CONCAT)) {
+            Code.error(previous(), "Expressions must be separated by CONCAT");
+            return null; // Return null to signify parsing failure
+        }
+        
         return new Stmt.Display(value);
     }
+    
+    
+    // Parse expression with support for the '&' character
+    private Expr parseExpressionWithAmpersand() {
+        if (match(TokenType.CONCAT)) {
+            advance();
+            return new Expr.Literal("&"); // Represent '&' character as a special token
+        } else {
+            return parseExpressionWithNewLine(); // Use existing expression parsing logic
+        }
+    }
+    private Expr parseExpressionWithNewLine() {
+        if (match(TokenType.NEXT_LINE)) {
+            advance();
+            return new Expr.Literal("\n"); // Represent newline with a special token
+        } else {
+            return expression();
+        }
+    }
+    /*private Stmt displayStatement() {
+        consume(COLON, "Expect ':' after 'DISPLAY'.");  // Ensure a colon follows 'DISPLAY'
+    
+        List<Expr> expressions = new ArrayList<>();
+        expressions.add(expression());
+    
+        while (!isAtEnd() && !check(END)) {
+            if (match(CONCAT)) {
+                expressions.add(expression());
+            } else if (check(IDENTIFIER) || check(NUMBER) || check(STRING_LITERAL) || check(CHAR_LITERAL) || check(BOOL_LITERAL)) {
+                throw error(peek(), "Expect '&' between values in 'DISPLAY' statement.");
+            } else {
+                break;  // If no more valid expressions, exit the loop
+            }
+        }
+    
+        // Handle END CODE properly
+        if (!isAtEnd()) {
+            if (match(END) && match(CODE)) {
+                // Create concatenated expression if needed
+                if (expressions.size() == 1) {
+                    return new Stmt.Display(expressions.get(0));
+                }
+    
+                Expr concatExpr = expressions.get(0);
+                for (int i = 1; i < expressions.size(); i++) {
+                    concatExpr = new Expr.Binary(concatExpr, new Token(CONCAT, "&", null, -1), expressions.get(i));
+                }
+    
+                return new Stmt.Display(concatExpr);
+            } else {
+                throw error(previous(), "Expect 'END CODE' after display statement.");
+            }
+        }
+    
+        // Create concatenated expression if needed
+        if (expressions.size() == 1) {
+            return new Stmt.Display(expressions.get(0));
+        }
+    
+        Expr concatExpr = expressions.get(0);
+        for (int i = 1; i < expressions.size(); i++) {
+            concatExpr = new Expr.Binary(concatExpr, new Token(CONCAT, "&", null, -1), expressions.get(i));
+        }
+    
+        return new Stmt.Display(concatExpr);
+    }
+    */
 
     private code.Stmt scanStatement() {
         List<Token> variables = new ArrayList<>();
@@ -500,77 +593,151 @@ public class Parser {
 
         return primary();
     }
-
     private Expr primary() {
         if (match(FALSE)) return new Expr.Literal(false);
         if (match(TRUE)) return new Expr.Literal(true);
         if (match(NIL)) return new Expr.Literal(null);
-
+    
         if (match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal);
         }
-
+    
         if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING_LITERAL, ESCAPE)) {
             Token previousObjToken = previous();
-
+    
             if (check(NEXT_LINE) && !isAtEnd()) {
-                //the newline token $
+                // The newline token $
                 advance();
-
-                //if the newline $ is in the middle of a string, 
-                //it will be treated as a binary operation for 2 strings
+    
+                // If the newline $ is in the middle of a string, 
+                // it will be treated as a binary operation for 2 strings
                 if (!isAtEnd()) {
                     Token nextToken = peek();
                     return new Expr.Binary(new Expr.Literal(previousObjToken.getLiteral()),
                             new Token(NEXT_LINE, null, "\n", -1), primary());
                 } else {
-                    //if the newline $ is at the end of a string
+                    // If the newline $ is at the end of a string
                     System.out.print(previousObjToken.getLiteral());
                     return new Expr.Literal(new Token(NEXT_LINE, null, null, -1));
                 }
+            } else if (check(CONCAT) || check(NEXT_LINE)) {
+                // If '&', '#', or '$' is encountered, treat it as a valid expression
+                advance();
+                return new Expr.Literal(previousObjToken.getLiteral() + previous().lexeme);
             } else {
                 return new Expr.Literal(previousObjToken.getLiteral());
             }
-            // return new Expr.Literal(previous().literal);
         }
-
-        
-
-//        if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, FLOAT_KEYWORD)) {
-//            Token nameToken = previous(); // Capture the datatype token
-//            Token datatypeToken;
-//
-//            if (nameToken.type.equals(INT_KEYWORD)){
-//                datatypeToken = consume(INT_KEYWORD, "Expect datatype after variable name."); // Consume the datatype token
-//            }
-//
-//            return new Expr.Variable(datatypeToken, nameToken); // Create a Variable instance with both tokens
-//        }
-
-//        if (match(INT_KEYWORD, CHAR_KEYWORD, BOOL_KEYWORD, CHAR_KEYWORD)) {
-////            System.out.println("datatype keyword found");
-////            Token dataType = previous();
-//            Token dataType = tokens.get(current-2);
-//            if (match(IDENTIFIER)) {
-//                Token varName = previous();
-//                return new Expr.Variable(dataType, varName);
-//            }
-//        }
-
+    
         if (match(IDENTIFIER)) {
-//            current+=2;
-//            Token varName = previous();
             return new Expr.Variable(previous());
         }
-
+    
         if (match(LEFT_PAREN)) {
             Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
-
+    
         throw error(peek(), "Expect expression.");
     }
+    
+    // private Expr primary() {
+    //     if (match(FALSE)) return new Expr.Literal(false);
+    //     if (match(TRUE)) return new Expr.Literal(true);
+    //     if (match(NIL)) return new Expr.Literal(null);
+    
+    //     if (match(NUMBER, STRING)) {
+    //         return new Expr.Literal(previous().literal);
+    //     }
+    
+    //     if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING_LITERAL, ESCAPE)) {
+    //         Token previousObjToken = previous();
+    
+    //         if (check(NEXT_LINE) && !isAtEnd()) {
+    //             // The newline token $
+    //             advance();
+    
+    //             // If the newline $ is in the middle of a string, 
+    //             // it will be treated as a binary operation for 2 strings
+    //             if (!isAtEnd()) {
+    //                 Token nextToken = peek();
+    //                 return new Expr.Binary(new Expr.Literal(previousObjToken.getLiteral()),
+    //                         new Token(NEXT_LINE, null, "\n", -1), primary());
+    //             } else {
+    //                 // If the newline $ is at the end of a string
+    //                 System.out.print(previousObjToken.getLiteral());
+    //                 return new Expr.Literal(new Token(NEXT_LINE, null, null, -1));
+    //             }
+    //         } else {
+    //             return new Expr.Literal(previousObjToken.getLiteral());
+    //         }
+    //     }
+    
+    //     if (match(IDENTIFIER)) {
+    //         return new Expr.Variable(previous());
+    //     }
+    
+    //     if (match(CONCAT)) {
+    //         // If '&' is encountered, treat it as a valid expression
+    //         advance();
+    //         return new Expr.Literal("&");
+    //     }
+    
+    //     if (match(LEFT_PAREN)) {
+    //         Expr expr = expression();
+    //         consume(RIGHT_PAREN, "Expect ')' after expression.");
+    //         return new Expr.Grouping(expr);
+    //     }
+    
+    //     throw error(peek(), "Expect expression.");
+    // }
+    // private Expr primary() {
+    //     if (match(FALSE)) return new Expr.Literal(false);
+    //     if (match(TRUE)) return new Expr.Literal(true);
+    //     if (match(NIL)) return new Expr.Literal(null);
+
+    //     if (match(NUMBER, STRING)) {
+    //         return new Expr.Literal(previous().literal);
+    //     }
+
+    //     if (match(INT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, FLOAT_LITERAL, STRING_LITERAL, ESCAPE)) {
+    //         Token previousObjToken = previous();
+
+    //         if (check(NEXT_LINE) && !isAtEnd()) {
+    //             //the newline token $
+    //             // System.out.print("In primary, recognized NEXT_LINE");
+    //             advance();
+
+    //             //if the newline $ is in the middle of a string, 
+    //             //it will be treated as a binary operation for 2 strings
+    //             if (!isAtEnd()) {
+    //                 Token nextToken = peek();
+    //                 return new Expr.Binary(new Expr.Literal(previousObjToken.getLiteral()),
+    //                         new Token(NEXT_LINE, null, "\n", -1), primary());
+    //             } else {
+    //                 //if the newline $ is at the end of a string
+    //                 System.out.print(previousObjToken.getLiteral());
+    //                 return new Expr.Literal(new Token(NEXT_LINE, null, null, -1));
+    //             }
+    //         } else {
+    //             return new Expr.Literal(previousObjToken.getLiteral());
+    //         }
+    //     }        
+
+    //     if (match(IDENTIFIER)) {
+    //         return new Expr.Variable(previous());
+    //     }
+
+    //     if (match(LEFT_PAREN)) {
+    //         Expr expr = expression();
+    //         consume(RIGHT_PAREN, "Expect ')' after expression.");
+    //         return new Expr.Grouping(expr);
+    //     }
+
+    //     throw error(peek(), "Expect expression.");
+    // }
+    
 
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
